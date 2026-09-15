@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "name": "vietflex-vietnam-reference-labels",
+  "metadata": {
+    "language": "vi",
+    "purpose": "Cartographic reference labels for Vietflex Vietnamese-first styles",
+    "boundary_semantics": "Label anchors only; this dataset does not encode legal or maritime boundaries.",
+    "dispute_note": "Hoàng Sa and Trường Sa are subject to overlapping sovereignty claims. Labels reflect the Vietnamese-language display policy selected for this Vietflex style and do not replace authoritative boundary datasets."
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "bien-dong",
+        "kind": "sea",
+        "name_vi": "Biển Đông",
+        "display_vi": "Biển Đông",
+        "label_role": "reference",
+        "legal_boundary": false
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [113.3, 13.4]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "hoang-sa",
+        "kind": "archipelago",
+        "name_vi": "Quần đảo Hoàng Sa",
+        "display_vi": "Quần đảo Hoàng Sa · Việt Nam",
+        "label_role": "reference",
+        "disputed": true,
+        "legal_boundary": false,
+        "note_vi": "Nhãn tiếng Việt theo cấu hình hiển thị Vietflex; điểm này chỉ là neo nhãn bản đồ và không phải đường biên pháp lý."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [112.0, 16.5]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "truong-sa",
+        "kind": "archipelago",
+        "name_vi": "Quần đảo Trường Sa",
+        "display_vi": "Quần đảo Trường Sa · Việt Nam",
+        "label_role": "reference",
+        "disputed": true,
+        "legal_boundary": false,
+        "note_vi": "Nhãn tiếng Việt theo cấu hình hiển thị Vietflex; điểm này chỉ là neo nhãn bản đồ và không phải đường biên pháp lý."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [114.0, 10.0]
+      }
+    }
+  ]
+}
