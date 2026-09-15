@@ -3,7 +3,7 @@
 /* Vietflex OpenMap defaults */
 .vietflex-map,
 .maplibregl-map {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Arial, sans-serif;
 }
 
 .vietflex-popup .maplibregl-popup-content {
@@ -15,4 +15,36 @@
 .maplibregl-ctrl-group {
   border-radius: 8px;
   overflow: hidden;
+}
+
+.vietflex-basemap-control {
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 8px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.24);
+  overflow: hidden;
+}
+
+.vietflex-basemap-select {
+  appearance: auto;
+  border: 0;
+  background: transparent;
+  color: #17212b;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  min-width: 118px;
+  outline: none;
+  padding: 8px 30px 8px 10px;
+}
+
+.vietflex-basemap-select:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: -2px;
+}
+
+@media (max-width: 640px) {
+  .vietflex-basemap-select {
+    max-width: 132px;
+    min-width: 0;
+  }
 }
