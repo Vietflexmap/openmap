@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Vietflex OpenMap — MapLibre CDN</title>
+  <title>Vietflex OpenMap — Bản đồ nền mã nguồn mở</title>
 
   <link rel="stylesheet" href="./dist/vietflex.css">
   <script src="./dist/vietflex.js"></script>
@@ -18,18 +18,25 @@
 
   <script>
     const map = Vietflex.vietflexMap('map', {
-      style: 'https://demotiles.maplibre.org/style.json',
-      center: [21.0285, 105.8542],
-      zoom: 11,
+      basemap: 'streets',
+      language: 'vi',
+      vietnamReferenceLabels: true,
+      center: [13.8, 110.2],
+      zoom: 4.6,
       zoomControl: false,
       attributionControl: false
     });
 
     new Vietflex.ZoomControl({ position: 'topleft' }).addTo(map);
-    new Vietflex.AttributionControl({ position: 'bottomright' }).addTo(map);
+    new Vietflex.BasemapControl({ position: 'topright' }).addTo(map);
+    new Vietflex.ScaleControl({ position: 'bottomleft' }).addTo(map);
+    new Vietflex.AttributionControl({
+      position: 'bottomright',
+      customAttribution: 'Vietflex OpenMap · MapLibre · OpenStreetMap/OpenFreeMap'
+    }).addTo(map);
 
     new Vietflex.Marker([21.0285, 105.8542])
-      .bindPopup('<strong>Hà Nội</strong><br>Vietflex OpenMap + MapLibre')
+      .bindPopup('<strong>Hà Nội</strong><br>Bản đồ nền Vietflex + MapLibre')
       .addTo(map);
   </script>
 </body>
