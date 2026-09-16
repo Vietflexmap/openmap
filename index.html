@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>VIETFLEX CORE TECH — Core Technology Platform</title>
 
-  <link rel="stylesheet" href="./dist/vietflex.css">
-  <script src="./dist/vietflex.js"></script>
-  <script src="./dist/vietflex-core.js"></script>
-  <script src="./dist/vietflex-platform.js"></script>
+  <link rel="stylesheet" href="./dist/vietflex.css?v=20260916-0810">
+  <script src="./dist/vietflex.js?v=20260916-0810"></script>
+  <script src="./dist/vietflex-core.js?v=20260916-0810"></script>
+  <script src="./dist/vietflex-platform.js?v=20260916-0810"></script>
 
   <style>
     html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; }
@@ -35,30 +35,36 @@
     .pill.active { background:#e7f6ec; }
     .hint { margin-top:8px; color:#66717d; }
 
-    /* Branding hiển thị chính. Attribution nguồn dữ liệu vẫn nằm trong nút info compact. */
+    /* Branding Vietflex luôn hiển thị độc lập với attribution nguồn dữ liệu. */
     .vf-map-credit {
       position: absolute;
-      right: 36px;
-      bottom: 4px;
-      z-index: 6;
+      right: 42px;
+      bottom: 6px;
+      z-index: 999;
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      padding: 3px 7px;
-      border-radius: 5px;
-      background: rgba(255,255,255,.92);
-      box-shadow: 0 1px 4px rgba(0,0,0,.12);
-      color: #26313b;
-      font: 11px/1.2 system-ui, sans-serif;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(255,255,255,.96);
+      box-shadow: 0 1px 5px rgba(0,0,0,.18);
+      color: #17212b;
+      font: 600 11px/1.2 system-ui, sans-serif;
       white-space: nowrap;
       pointer-events: none;
     }
-    .vf-map-credit .flag { font-size: 14px; line-height: 1; }
+    .vf-map-credit .flag { font-size: 15px; line-height: 1; }
+
+    /* Giữ attribution nguồn ở dạng nút info compact. */
+    .maplibregl-ctrl-attrib.maplibregl-compact {
+      min-width: 28px;
+      min-height: 28px;
+    }
 
     @media (max-width: 700px) {
       .core-body { display:none; }
       .core-panel { width:auto; right:12px; }
-      .vf-map-credit { right: 34px; bottom: 4px; }
+      .vf-map-credit { right: 40px; bottom: 5px; }
     }
   </style>
 </head>
@@ -115,14 +121,12 @@ Event Core ──┘        │
     new Vietflex.BasemapControl({ position: 'topright' }).addTo(map);
     new Vietflex.ScaleControl({ position: 'bottomleft' }).addTo(map);
 
-    // Nguồn dữ liệu vẫn được giữ trong attribution compact để tuân thủ giấy phép.
+    // Attribution nguồn dữ liệu giữ trong nút info compact; branding hiển thị bằng badge riêng phía trên.
     new Vietflex.AttributionControl({
       position: 'bottomright',
-      compact: true,
-      customAttribution: '🇻🇳 © Vietflex | OpenMap'
+      compact: true
     }).addTo(map);
 
-    // Giữ duy nhất nhãn Biển Đông do lớp tham chiếu Vietflex quản lý.
     function suppressDuplicateBienDong(rawMap) {
       const style = rawMap.getStyle();
       if (!style || !Array.isArray(style.layers)) return;
@@ -144,15 +148,13 @@ Event Core ──┘        │
     });
 
     Vietflex.CoreTech.configure({ language: 'vi', datasetVersion: 'dev' });
-
-    // Reference adapters/gateways present on this static deployment.
     Vietflex.CoreTech.Adapters.register('maplibre', {}, { kind: 'maplibre', status: 'active', role: 'renderer' });
     Vietflex.CoreTech.Gateways.register('cdn', {}, { port: 'cdn', status: 'active', role: 'static-distribution' });
 
     async function loadManifest() {
       let manifest = null;
       try {
-        const response = await fetch('./manifest.json', { cache: 'no-store' });
+        const response = await fetch('./manifest.json?v=20260916-0810', { cache: 'no-store' });
         if (response.ok) manifest = await response.json();
       } catch (_) {}
 
