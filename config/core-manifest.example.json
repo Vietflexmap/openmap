@@ -1,0 +1,39 @@
+{
+  "platform": "Vietflex Platform Core",
+  "sdk_version": "0.3.0",
+  "schema_version": "0.3.0",
+  "dataset_version": "YYYYMMDD-N",
+  "build_time": "YYYY-MM-DDTHH:mm:ssZ",
+  "source_snapshot": {
+    "osm_timestamp": null,
+    "dem_version": null,
+    "satellite_collection": null,
+    "gps_batch": null,
+    "camera_batch": null,
+    "iot_batch": null
+  },
+  "components": {
+    "basemap": { "version": null, "artifact": null, "checksum": null },
+    "places": { "version": null, "artifact": null, "checksum": null },
+    "roadgraph": { "version": null, "artifact": null, "checksum": null },
+    "terrain": { "version": null, "artifact": null, "checksum": null },
+    "events": { "version": null, "artifact": null, "checksum": null },
+    "models": []
+  },
+  "storage": {
+    "postgis": null,
+    "gpkg": [],
+    "cog": [],
+    "pmtiles": [],
+    "object_storage": null
+  },
+  "licenses": [],
+  "qa": {
+    "status": "development",
+    "checks": []
+  },
+  "build": {
+    "pipeline_commit": null,
+    "builder": null
+  }
+}
