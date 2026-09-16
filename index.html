@@ -3,39 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>VIETFLEX CORE TECH — Core Technology Platform</title>
+  <title>Vietflex OpenMap</title>
 
-  <link rel="stylesheet" href="./dist/vietflex.css?v=20260916-0810">
-  <script src="./dist/vietflex.js?v=20260916-0810"></script>
-  <script src="./dist/vietflex-core.js?v=20260916-0810"></script>
-  <script src="./dist/vietflex-platform.js?v=20260916-0810"></script>
+  <link rel="stylesheet" href="./dist/vietflex.css?v=20260916-0820">
+  <script src="./dist/vietflex.js?v=20260916-0820"></script>
+  <script src="./dist/vietflex-core.js?v=20260916-0820"></script>
+  <script src="./dist/vietflex-platform.js?v=20260916-0820"></script>
 
   <style>
     html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; }
     #map { width: 100%; height: 100%; }
-    .core-panel {
-      position: absolute;
-      left: 12px;
-      top: 12px;
-      z-index: 5;
-      width: min(430px, calc(100vw - 24px));
-      background: rgba(255,255,255,.96);
-      border-radius: 10px;
-      box-shadow: 0 3px 18px rgba(0,0,0,.18);
-      overflow: hidden;
-      font-size: 12px;
-    }
-    .core-head { padding: 10px 12px; border-bottom: 1px solid #e6e8eb; }
-    .core-head strong { display:block; font-size:14px; letter-spacing:.02em; }
-    .core-head span { color:#59636e; }
-    .core-body { padding: 10px 12px; max-height: 42vh; overflow:auto; }
-    .arch { margin:0; white-space:pre; font: 10px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:#26313b; }
-    .status { margin-top:8px; display:flex; gap:6px; flex-wrap:wrap; }
-    .pill { padding:3px 6px; border-radius:999px; background:#f1f3f5; }
-    .pill.active { background:#e7f6ec; }
-    .hint { margin-top:8px; color:#66717d; }
 
-    /* Branding Vietflex luôn hiển thị độc lập với attribution nguồn dữ liệu. */
     .vf-map-credit {
       position: absolute;
       right: 42px;
@@ -51,19 +29,31 @@
       color: #17212b;
       font: 600 11px/1.2 system-ui, sans-serif;
       white-space: nowrap;
-      pointer-events: none;
+      text-decoration: none;
+      cursor: pointer;
     }
-    .vf-map-credit .flag { font-size: 15px; line-height: 1; }
 
-    /* Giữ attribution nguồn ở dạng nút info compact. */
+    .vf-map-credit:hover {
+      background: #fff;
+      text-decoration: underline;
+    }
+
+    .vf-map-credit:focus-visible {
+      outline: 2px solid #17212b;
+      outline-offset: 2px;
+    }
+
+    .vf-map-credit .flag {
+      font-size: 15px;
+      line-height: 1;
+    }
+
     .maplibregl-ctrl-attrib.maplibregl-compact {
       min-width: 28px;
       min-height: 28px;
     }
 
     @media (max-width: 700px) {
-      .core-body { display:none; }
-      .core-panel { width:auto; right:12px; }
       .vf-map-credit { right: 40px; bottom: 5px; }
     }
   </style>
@@ -71,40 +61,16 @@
 <body>
   <div id="map"></div>
 
-  <section class="core-panel" aria-label="Vietflex Core Tech architecture">
-    <div class="core-head">
-      <strong>VIETFLEX CORE TECH <span id="core-version"></span></strong>
-      <span>Stable Core · Ports & Adapters · SDK/Plugins</span>
-    </div>
-    <div class="core-body">
-<pre class="arch">Schema Core ─┐
-Capability ──┼─→ Domain Services
-Event Core ──┘        │
-             ┌────────┼────────┐
-             ↓        ↓        ↓
-          Data     Spatial  Temporal
-             └────────┼────────┘
-                      ↓
-                Adapter Layer
- PostGIS · PMTiles · COG · Valhalla
- Photon · MQTT · GeoAI · MapLibre
-                      ↓
-               PORT / GATEWAYS
-          CDN · API · MCP · Events
-                      ↓
-                SDK / Plugins
-                      ↓
- WebGIS · Mobile · Vehicle · Robot
-          xADAS · AI Agent</pre>
-      <div class="status" id="port-status"></div>
-      <div class="hint">Trang này là reference implementation + CDN tĩnh của Core Tech; backend API/MCP/Events được triển khai tách rời qua gateway.</div>
-    </div>
-  </section>
-
-  <div class="vf-map-credit" aria-label="Vietflex OpenMap">
+  <a
+    class="vf-map-credit"
+    href="https://github.com/Vietflexmap/VN"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Vietflex OpenMap trên GitHub"
+    title="Vietflex OpenMap trên GitHub">
     <span class="flag" aria-hidden="true">🇻🇳</span>
     <span>© Vietflex | OpenMap</span>
-  </div>
+  </a>
 
   <script>
     const map = Vietflex.vietflexMap('map', {
@@ -121,22 +87,42 @@ Event Core ──┘        │
     new Vietflex.BasemapControl({ position: 'topright' }).addTo(map);
     new Vietflex.ScaleControl({ position: 'bottomleft' }).addTo(map);
 
-    // Attribution nguồn dữ liệu giữ trong nút info compact; branding hiển thị bằng badge riêng phía trên.
+    // Attribution nguồn dữ liệu vẫn được giữ trong nút info compact.
     new Vietflex.AttributionControl({
       position: 'bottomright',
       compact: true
     }).addTo(map);
 
+    // Giữ duy nhất nhãn Biển Đông do lớp tham chiếu Vietflex quản lý.
     function suppressDuplicateBienDong(rawMap) {
       const style = rawMap.getStyle();
       if (!style || !Array.isArray(style.layers)) return;
+
       style.layers.forEach((layer) => {
-        if (layer.type !== 'symbol' || String(layer.id || '').startsWith('vietflex-') || !layer.layout || layer.layout['text-field'] === undefined) return;
+        if (
+          layer.type !== 'symbol' ||
+          String(layer.id || '').startsWith('vietflex-') ||
+          !layer.layout ||
+          layer.layout['text-field'] === undefined
+        ) return;
+
         try {
           const current = rawMap.getLayoutProperty(layer.id, 'text-field');
           if (current === undefined || current === null) return;
-          const featureName = ['coalesce', ['get', 'name:vi'], ['get', 'name_vi'], ['get', 'name']];
-          rawMap.setLayoutProperty(layer.id, 'text-field', ['case', ['==', featureName, 'Biển Đông'], '', current]);
+
+          const featureName = [
+            'coalesce',
+            ['get', 'name:vi'],
+            ['get', 'name_vi'],
+            ['get', 'name']
+          ];
+
+          rawMap.setLayoutProperty(layer.id, 'text-field', [
+            'case',
+            ['==', featureName, 'Biển Đông'],
+            '',
+            current
+          ]);
         } catch (_) {}
       });
     }
@@ -147,35 +133,20 @@ Event Core ──┘        │
       if (rawMap.isStyleLoaded()) apply();
     });
 
-    Vietflex.CoreTech.configure({ language: 'vi', datasetVersion: 'dev' });
-    Vietflex.CoreTech.Adapters.register('maplibre', {}, { kind: 'maplibre', status: 'active', role: 'renderer' });
-    Vietflex.CoreTech.Gateways.register('cdn', {}, { port: 'cdn', status: 'active', role: 'static-distribution' });
-
-    async function loadManifest() {
-      let manifest = null;
-      try {
-        const response = await fetch('./manifest.json?v=20260916-0810', { cache: 'no-store' });
-        if (response.ok) manifest = await response.json();
-      } catch (_) {}
-
-      const version = manifest && manifest.version ? manifest.version : Vietflex.CoreTech.version;
-      document.getElementById('core-version').textContent = 'v' + version;
-
-      const ports = manifest && manifest.ports ? manifest.ports : {
-        cdn: { status: 'active' }, api: { status: 'planned' }, mcp: { status: 'planned' }, events: { status: 'planned' }
-      };
-      const host = document.getElementById('port-status');
-      Object.keys(ports).forEach((id) => {
-        const item = document.createElement('span');
-        const status = ports[id].status || 'planned';
-        item.className = 'pill ' + (status === 'active' ? 'active' : '');
-        item.textContent = id.toUpperCase() + ': ' + status;
-        host.appendChild(item);
+    // Core Tech vẫn được nạp làm nền kỹ thuật, nhưng không hiển thị bảng kiến trúc trên UI.
+    if (Vietflex.CoreTech) {
+      Vietflex.CoreTech.configure({ language: 'vi', datasetVersion: 'dev' });
+      Vietflex.CoreTech.Adapters.register('maplibre', {}, {
+        kind: 'maplibre',
+        status: 'active',
+        role: 'renderer'
+      });
+      Vietflex.CoreTech.Gateways.register('cdn', {}, {
+        port: 'cdn',
+        status: 'active',
+        role: 'static-distribution'
       });
     }
-
-    loadManifest();
-    console.info('Vietflex Core Tech', Vietflex.CoreTech.manifest());
   </script>
 </body>
 </html>
