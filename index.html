@@ -5,166 +5,131 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Vietflex OpenMap</title>
 
-  <link rel="stylesheet" href="./dist/vietflex.css?v=20260916-0900">
-  <script src="./dist/vietflex.js?v=20260916-0900"></script>
-  <script src="./dist/vietflex-core.js?v=20260916-0900"></script>
-  <script src="./dist/vietflex-platform.js?v=20260916-0900"></script>
+  <link rel="stylesheet" href="./dist/vietflex.css?v=20260916-0930">
+  <script src="./dist/vietflex.js?v=20260916-0930"></script>
+  <script src="./dist/vietflex-core.js?v=20260916-0930"></script>
+  <script src="./dist/vietflex-platform.js?v=20260916-0930"></script>
 
   <style>
-    html, body {
-      margin: 0;
-      height: 100%;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
+    html, body { margin: 0; height: 100%; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     #map { width: 100%; height: 100%; }
 
     .vf-map-credit {
-      position: absolute;
-      right: 46px;
-      bottom: 6px;
-      z-index: 999;
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 5px 10px;
-      border: 1px solid rgba(21, 101, 192, .14);
-      border-radius: 7px;
-      background: rgba(255, 255, 255, .97);
-      box-shadow: 0 1px 5px rgba(0, 0, 0, .16);
-      color: #1565c0;
-      font: 700 12px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      white-space: nowrap;
-      text-decoration: none;
-      cursor: pointer;
+      position: absolute; right: 46px; bottom: 6px; z-index: 999;
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 5px 10px; border: 1px solid rgba(21,101,192,.14); border-radius: 7px;
+      background: rgba(255,255,255,.97); box-shadow: 0 1px 5px rgba(0,0,0,.16);
+      color: #1565c0; font: 700 12px/1.2 system-ui,sans-serif; white-space: nowrap;
+      text-decoration: none; cursor: pointer;
     }
+    .vf-map-credit:hover { color:#0d47a1; background:#fff; }
+    .vf-flag { width:20px; height:14px; display:inline-flex; overflow:hidden; border-radius:2px; box-shadow:0 0 0 1px rgba(0,0,0,.08); }
+    .vf-flag svg { width:100%; height:100%; display:block; }
 
-    .vf-map-credit:hover { color: #0d47a1; background: #fff; }
-    .vf-map-credit:focus-visible { outline: 2px solid #1565c0; outline-offset: 2px; }
-
-    .vf-flag {
-      width: 20px;
-      height: 14px;
-      display: inline-flex;
-      overflow: hidden;
-      border-radius: 2px;
-      box-shadow: 0 0 0 1px rgba(0, 0, 0, .08);
-      flex: 0 0 auto;
-    }
-
-    .vf-flag svg { width: 100%; height: 100%; display: block; }
-
-    .vf-attrib-wrap {
-      position: absolute;
-      right: 8px;
-      bottom: 6px;
-      z-index: 1000;
-    }
-
+    .vf-attrib-wrap { position:absolute; right:8px; bottom:6px; z-index:1000; }
     .vf-attrib-toggle {
-      width: 30px;
-      height: 30px;
-      border: 0;
-      border-radius: 50%;
-      background: rgba(255,255,255,.97);
-      box-shadow: 0 1px 5px rgba(0,0,0,.18);
-      color: #17212b;
-      font: 700 18px/30px Georgia, serif;
-      padding: 0;
-      cursor: pointer;
+      width:30px; height:30px; border:0; border-radius:50%; background:rgba(255,255,255,.97);
+      box-shadow:0 1px 5px rgba(0,0,0,.18); color:#17212b; font:700 18px/30px Georgia,serif; padding:0; cursor:pointer;
     }
-
-    .vf-attrib-toggle:hover { background: #fff; }
-    .vf-attrib-toggle:focus-visible { outline: 2px solid #1565c0; outline-offset: 2px; }
-
     .vf-attrib-panel {
-      position: absolute;
-      right: 0;
-      bottom: 36px;
-      display: none;
-      width: max-content;
-      max-width: min(720px, calc(100vw - 24px));
-      padding: 7px 10px;
-      border-radius: 7px;
-      background: rgba(255,255,255,.98);
-      box-shadow: 0 2px 10px rgba(0,0,0,.20);
-      color: #26313b;
-      font: 11px/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      white-space: normal;
+      position:absolute; right:0; bottom:36px; display:none; width:max-content; max-width:min(720px,calc(100vw - 24px));
+      padding:7px 10px; border-radius:7px; background:rgba(255,255,255,.98); box-shadow:0 2px 10px rgba(0,0,0,.20);
+      color:#26313b; font:11px/1.4 system-ui,sans-serif;
     }
+    .vf-attrib-panel.is-open { display:block; }
+    .vf-attrib-panel a { color:#1565c0; text-decoration:none; }
 
-    .vf-attrib-panel.is-open { display: block; }
-    .vf-attrib-panel a { color: #1565c0; text-decoration: none; }
-    .vf-attrib-panel a:hover { text-decoration: underline; }
-
-    /* Tọa độ rê chuột: đặt sát thước tỷ lệ ở góc trái dưới. */
     .vf-coordinate-control {
-      position: absolute;
-      left: 118px;
-      bottom: 6px;
-      z-index: 998;
-      display: inline-flex;
-      align-items: stretch;
-      min-height: 28px;
-      border: 1px solid rgba(0,0,0,.12);
-      border-radius: 6px;
-      background: rgba(255,255,255,.96);
-      box-shadow: 0 1px 4px rgba(0,0,0,.15);
-      overflow: hidden;
-      color: #17212b;
-      font: 11px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      position:absolute; left:118px; bottom:6px; z-index:998; display:inline-flex; align-items:stretch; min-height:28px;
+      border:1px solid rgba(0,0,0,.12); border-radius:6px; background:rgba(255,255,255,.96);
+      box-shadow:0 1px 4px rgba(0,0,0,.15); overflow:hidden; color:#17212b;
+      font:11px/1.2 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    }
+    .vf-coordinate-modes { display:inline-flex; border-right:1px solid rgba(0,0,0,.10); }
+    .vf-coordinate-mode { border:0; border-right:1px solid rgba(0,0,0,.08); background:transparent; color:#53606d; font:700 10px/1 system-ui,sans-serif; padding:0 8px; cursor:pointer; }
+    .vf-coordinate-mode:last-child { border-right:0; }
+    .vf-coordinate-mode.is-active { color:#0d47a1; background:#eaf3ff; }
+    .vf-coordinate-value { min-width:238px; display:flex; align-items:center; padding:0 9px; white-space:nowrap; }
+
+    /* Menu công cụ góc phải */
+    .vf-tools { position:absolute; top:10px; right:10px; z-index:1100; }
+    .vf-tools-toggle {
+      width:38px; height:38px; border:0; border-radius:8px; background:rgba(255,255,255,.97);
+      box-shadow:0 1px 6px rgba(0,0,0,.20); color:#26313b; font:700 20px/38px system-ui,sans-serif; padding:0; cursor:pointer;
+    }
+    .vf-tools-panel {
+      position:absolute; right:0; top:46px; width:230px; display:none; overflow:hidden;
+      border:1px solid rgba(0,0,0,.10); border-radius:10px; background:rgba(255,255,255,.98);
+      box-shadow:0 6px 24px rgba(0,0,0,.20); color:#26313b;
+    }
+    .vf-tools-panel.is-open { display:block; }
+    .vf-tool-item, .vf-tool-title {
+      width:100%; box-sizing:border-box; border:0; background:transparent; color:#26313b;
+      text-align:left; padding:10px 12px; font:600 13px/1.2 system-ui,sans-serif; cursor:pointer;
+      border-bottom:1px solid #eef0f2;
+    }
+    .vf-tool-item:hover, .vf-tool-title:hover { background:#f5f8fb; }
+    .vf-tool-title { display:flex; align-items:center; justify-content:space-between; }
+    .vf-submenu { display:none; padding:6px; background:#f8fafc; border-bottom:1px solid #eef0f2; }
+    .vf-submenu.is-open { display:block; }
+    .vf-basemap-option {
+      width:100%; border:0; border-radius:6px; background:transparent; text-align:left; padding:8px 9px;
+      color:#334155; font:12px/1.2 system-ui,sans-serif; cursor:pointer;
+    }
+    .vf-basemap-option:hover { background:#eaf3ff; }
+    .vf-basemap-option.is-active { color:#0d47a1; background:#eaf3ff; font-weight:700; }
+    .vf-search-box { display:none; padding:8px; background:#f8fafc; border-bottom:1px solid #eef0f2; }
+    .vf-search-box.is-open { display:flex; gap:6px; }
+    .vf-search-box input { min-width:0; flex:1; border:1px solid #cfd7df; border-radius:6px; padding:7px 8px; font:12px system-ui,sans-serif; }
+    .vf-search-box button { border:0; border-radius:6px; background:#1565c0; color:#fff; padding:0 10px; cursor:pointer; }
+    .vf-measure-status { display:none; padding:8px 10px; background:#fff8e1; color:#6b4f00; font:11px/1.35 system-ui,sans-serif; border-bottom:1px solid #f0e0a0; }
+    .vf-measure-status.is-open { display:block; }
+
+    @media print {
+      .vf-tools, .vf-attrib-wrap, .vf-coordinate-control { display:none !important; }
+      .vf-map-credit { right:8px; bottom:8px; }
     }
 
-    .vf-coordinate-modes {
-      display: inline-flex;
-      border-right: 1px solid rgba(0,0,0,.10);
-    }
-
-    .vf-coordinate-mode {
-      border: 0;
-      border-right: 1px solid rgba(0,0,0,.08);
-      background: transparent;
-      color: #53606d;
-      font: 700 10px/1 system-ui, sans-serif;
-      padding: 0 8px;
-      cursor: pointer;
-    }
-
-    .vf-coordinate-mode:last-child { border-right: 0; }
-    .vf-coordinate-mode.is-active { color: #0d47a1; background: #eaf3ff; }
-    .vf-coordinate-mode:hover { background: #f4f7fa; }
-
-    .vf-coordinate-value {
-      min-width: 238px;
-      display: flex;
-      align-items: center;
-      padding: 0 9px;
-      white-space: nowrap;
-    }
-
-    @media (max-width: 700px) {
-      .vf-map-credit { right: 44px; bottom: 5px; }
-      .vf-attrib-wrap { right: 6px; bottom: 5px; }
-      .vf-attrib-panel { max-width: calc(100vw - 20px); }
-      .vf-coordinate-control {
-        left: 8px;
-        bottom: 38px;
-        max-width: calc(100vw - 16px);
-      }
-      .vf-coordinate-value { min-width: 180px; }
+    @media (max-width:700px) {
+      .vf-map-credit { right:44px; bottom:5px; }
+      .vf-attrib-wrap { right:6px; bottom:5px; }
+      .vf-coordinate-control { left:8px; bottom:38px; max-width:calc(100vw - 16px); }
+      .vf-coordinate-value { min-width:180px; }
+      .vf-tools-panel { width:min(230px, calc(100vw - 20px)); }
     }
   </style>
 </head>
 <body>
   <div id="map"></div>
 
-  <a
-    class="vf-map-credit"
-    href="https://github.com/Vietflexmap/VN"
-    target="_blank"
-    rel="noopener noreferrer"
-    aria-label="Vietflex OpenMap trên GitHub"
-    title="Vietflex OpenMap trên GitHub">
+  <div class="vf-tools">
+    <button id="vf-tools-toggle" class="vf-tools-toggle" type="button" aria-label="Mở menu công cụ" aria-expanded="false" title="Công cụ bản đồ">☰</button>
+    <div id="vf-tools-panel" class="vf-tools-panel" aria-label="Công cụ bản đồ">
+      <button id="vf-basemap-title" class="vf-tool-title" type="button" aria-expanded="false"><span>▣ Nền bản đồ</span><span>›</span></button>
+      <div id="vf-basemap-menu" class="vf-submenu">
+        <button class="vf-basemap-option is-active" data-basemap="streets">Đường phố</button>
+        <button class="vf-basemap-option" data-basemap="light">Nền sáng</button>
+        <button class="vf-basemap-option" data-basemap="bright">Sáng rõ</button>
+        <button class="vf-basemap-option" data-basemap="dark">Nền tối</button>
+        <button class="vf-basemap-option" data-basemap="fiord">Địa hình tối</button>
+        <button class="vf-basemap-option" data-basemap="3d">Bản đồ 3D</button>
+      </div>
+
+      <button id="vf-measure-toggle" class="vf-tool-item" type="button">↔ Thước đo</button>
+      <div id="vf-measure-status" class="vf-measure-status">Bấm các điểm trên bản đồ để đo khoảng cách. Bấm “Thước đo” lần nữa để kết thúc.</div>
+
+      <button id="vf-search-toggle" class="vf-tool-item" type="button">⌕ Tra cứu</button>
+      <div id="vf-search-box" class="vf-search-box">
+        <input id="vf-search-input" type="text" placeholder="VD: 10.7769, 106.7009" aria-label="Nhập tọa độ để tra cứu">
+        <button id="vf-search-go" type="button">Đi</button>
+      </div>
+
+      <button id="vf-geolocate" class="vf-tool-item" type="button">◎ Tìm vị trí</button>
+      <button id="vf-print" class="vf-tool-item" type="button">⎙ In bản đồ</button>
+    </div>
+  </div>
+
+  <a class="vf-map-credit" href="https://github.com/Vietflexmap/VN" target="_blank" rel="noopener noreferrer" aria-label="Vietflex OpenMap trên GitHub" title="Vietflex OpenMap trên GitHub">
     <span class="vf-flag" aria-hidden="true">
       <svg viewBox="0 0 30 20" xmlns="http://www.w3.org/2000/svg">
         <rect width="30" height="20" fill="#da251d"/>
@@ -175,15 +140,7 @@
   </a>
 
   <div class="vf-attrib-wrap">
-    <button
-      id="vf-attrib-toggle"
-      class="vf-attrib-toggle"
-      type="button"
-      aria-label="Thông tin nguồn bản đồ"
-      aria-expanded="false"
-      aria-controls="vf-attrib-panel"
-      title="Thông tin nguồn bản đồ">ⓘ</button>
-
+    <button id="vf-attrib-toggle" class="vf-attrib-toggle" type="button" aria-label="Thông tin nguồn bản đồ" aria-expanded="false" aria-controls="vf-attrib-panel" title="Thông tin nguồn bản đồ">ⓘ</button>
     <div id="vf-attrib-panel" class="vf-attrib-panel" role="dialog" aria-label="Nguồn dữ liệu bản đồ">
       Nhãn tham chiếu tiếng Việt: Vietflex OpenMap |
       <a href="https://openfreemap.org/" target="_blank" rel="noopener noreferrer">OpenFreeMap</a> |
@@ -202,166 +159,148 @@
 
   <script>
     const map = Vietflex.vietflexMap('map', {
-      basemap: 'streets',
-      language: 'vi',
-      vietnamReferenceLabels: true,
-      center: [13.8, 110.2],
-      zoom: 4.6,
-      zoomControl: false,
-      attributionControl: false
+      basemap: 'streets', language: 'vi', vietnamReferenceLabels: true,
+      center: [13.8, 110.2], zoom: 4.6, zoomControl: false, attributionControl: false
     });
 
     new Vietflex.ZoomControl({ position: 'topleft' }).addTo(map);
-    new Vietflex.BasemapControl({ position: 'topright' }).addTo(map);
     new Vietflex.ScaleControl({ position: 'bottomleft' }).addTo(map);
+
+    const toolsToggle = document.getElementById('vf-tools-toggle');
+    const toolsPanel = document.getElementById('vf-tools-panel');
+    toolsToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = !toolsPanel.classList.contains('is-open');
+      toolsPanel.classList.toggle('is-open', open);
+      toolsToggle.setAttribute('aria-expanded', String(open));
+    });
+    toolsPanel.addEventListener('click', (e) => e.stopPropagation());
+
+    const basemapTitle = document.getElementById('vf-basemap-title');
+    const basemapMenu = document.getElementById('vf-basemap-menu');
+    basemapTitle.addEventListener('click', () => {
+      const open = !basemapMenu.classList.contains('is-open');
+      basemapMenu.classList.toggle('is-open', open);
+      basemapTitle.setAttribute('aria-expanded', String(open));
+    });
+    document.querySelectorAll('.vf-basemap-option').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        map.setBasemap(btn.dataset.basemap);
+        document.querySelectorAll('.vf-basemap-option').forEach(x => x.classList.toggle('is-active', x === btn));
+      });
+    });
 
     const attribToggle = document.getElementById('vf-attrib-toggle');
     const attribPanel = document.getElementById('vf-attrib-panel');
-
     function setAttributionOpen(open) {
       attribPanel.classList.toggle('is-open', open);
       attribToggle.setAttribute('aria-expanded', String(open));
     }
-
-    attribToggle.addEventListener('click', (event) => {
-      event.stopPropagation();
-      setAttributionOpen(!attribPanel.classList.contains('is-open'));
-    });
-
+    attribToggle.addEventListener('click', (event) => { event.stopPropagation(); setAttributionOpen(!attribPanel.classList.contains('is-open')); });
     attribPanel.addEventListener('click', (event) => event.stopPropagation());
-    document.addEventListener('click', () => setAttributionOpen(false));
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') setAttributionOpen(false);
-    });
 
-    // Chuyển WGS84 -> UTM (ellipsoid WGS84) dùng cho hiển thị VN2000 tham chiếu.
-    // Việt Nam chủ yếu thuộc UTM 48N và 49N; zone được chọn tự động theo kinh độ.
     function wgs84ToUTM(latDeg, lonDeg) {
       const zone = Math.max(1, Math.min(60, Math.floor((lonDeg + 180) / 6) + 1));
-      const a = 6378137.0;
-      const f = 1 / 298.257223563;
-      const e2 = f * (2 - f);
-      const ep2 = e2 / (1 - e2);
-      const k0 = 0.9996;
-      const lat = latDeg * Math.PI / 180;
-      const lon = lonDeg * Math.PI / 180;
-      const lon0 = ((zone - 1) * 6 - 180 + 3) * Math.PI / 180;
-
-      const sinLat = Math.sin(lat);
-      const cosLat = Math.cos(lat);
-      const tanLat = Math.tan(lat);
-      const N = a / Math.sqrt(1 - e2 * sinLat * sinLat);
-      const T = tanLat * tanLat;
-      const C = ep2 * cosLat * cosLat;
-      const A = cosLat * (lon - lon0);
-
-      const M = a * (
-        (1 - e2 / 4 - 3 * e2 * e2 / 64 - 5 * e2 * e2 * e2 / 256) * lat
-        - (3 * e2 / 8 + 3 * e2 * e2 / 32 + 45 * e2 * e2 * e2 / 1024) * Math.sin(2 * lat)
-        + (15 * e2 * e2 / 256 + 45 * e2 * e2 * e2 / 1024) * Math.sin(4 * lat)
-        - (35 * e2 * e2 * e2 / 3072) * Math.sin(6 * lat)
-      );
-
-      const easting = 500000 + k0 * N * (
-        A + (1 - T + C) * Math.pow(A, 3) / 6
-        + (5 - 18 * T + T * T + 72 * C - 58 * ep2) * Math.pow(A, 5) / 120
-      );
-
-      let northing = k0 * (
-        M + N * tanLat * (
-          A * A / 2
-          + (5 - T + 9 * C + 4 * C * C) * Math.pow(A, 4) / 24
-          + (61 - 58 * T + T * T + 600 * C - 330 * ep2) * Math.pow(A, 6) / 720
-        )
-      );
-
-      if (latDeg < 0) northing += 10000000;
-      return { zone, easting, northing };
+      const a=6378137.0, f=1/298.257223563, e2=f*(2-f), ep2=e2/(1-e2), k0=0.9996;
+      const lat=latDeg*Math.PI/180, lon=lonDeg*Math.PI/180, lon0=((zone-1)*6-180+3)*Math.PI/180;
+      const sinLat=Math.sin(lat), cosLat=Math.cos(lat), tanLat=Math.tan(lat);
+      const N=a/Math.sqrt(1-e2*sinLat*sinLat), T=tanLat*tanLat, C=ep2*cosLat*cosLat, A=cosLat*(lon-lon0);
+      const M=a*((1-e2/4-3*e2*e2/64-5*e2*e2*e2/256)*lat-(3*e2/8+3*e2*e2/32+45*e2*e2*e2/1024)*Math.sin(2*lat)+(15*e2*e2/256+45*e2*e2*e2/1024)*Math.sin(4*lat)-(35*e2*e2*e2/3072)*Math.sin(6*lat));
+      const easting=500000+k0*N*(A+(1-T+C)*Math.pow(A,3)/6+(5-18*T+T*T+72*C-58*ep2)*Math.pow(A,5)/120);
+      let northing=k0*(M+N*tanLat*(A*A/2+(5-T+9*C+4*C*C)*Math.pow(A,4)/24+(61-58*T+T*T+600*C-330*ep2)*Math.pow(A,6)/720));
+      if(latDeg<0) northing+=10000000;
+      return {zone,easting,northing};
     }
 
-    const coordValue = document.getElementById('vf-coordinate-value');
-    const btnWgs84 = document.getElementById('vf-mode-wgs84');
-    const btnVn2000 = document.getElementById('vf-mode-vn2000');
-    let coordinateMode = 'wgs84';
-    let lastLngLat = null;
-
-    function setCoordinateMode(mode) {
-      coordinateMode = mode;
-      const isWgs = mode === 'wgs84';
-      btnWgs84.classList.toggle('is-active', isWgs);
-      btnVn2000.classList.toggle('is-active', !isWgs);
-      btnWgs84.setAttribute('aria-pressed', String(isWgs));
-      btnVn2000.setAttribute('aria-pressed', String(!isWgs));
-      if (lastLngLat) renderCoordinate(lastLngLat);
+    const coordValue=document.getElementById('vf-coordinate-value');
+    const btnWgs84=document.getElementById('vf-mode-wgs84');
+    const btnVn2000=document.getElementById('vf-mode-vn2000');
+    let coordinateMode='wgs84', lastLngLat=null;
+    function renderCoordinate(lngLat){
+      const lon=Number(lngLat.lng), lat=Number(lngLat.lat); if(!Number.isFinite(lon)||!Number.isFinite(lat)) return;
+      if(coordinateMode==='wgs84') coordValue.textContent=`Lat ${lat.toFixed(6)}°  Lon ${lon.toFixed(6)}°`;
+      else { const u=wgs84ToUTM(lat,lon); coordValue.textContent=`X ${u.northing.toFixed(3)}  Y ${u.easting.toFixed(3)}  Z${u.zone}N`; }
     }
-
-    function renderCoordinate(lngLat) {
-      const lon = Number(lngLat.lng);
-      const lat = Number(lngLat.lat);
-      if (!Number.isFinite(lon) || !Number.isFinite(lat)) return;
-
-      if (coordinateMode === 'wgs84') {
-        coordValue.textContent = `Lat ${lat.toFixed(6)}°  Lon ${lon.toFixed(6)}°`;
-      } else {
-        const utm = wgs84ToUTM(lat, lon);
-        const zone = utm.zone === 48 || utm.zone === 49 ? utm.zone : utm.zone;
-        coordValue.textContent = `X ${utm.northing.toFixed(3)}  Y ${utm.easting.toFixed(3)}  Z${zone}N`;
-      }
+    function setCoordinateMode(mode){
+      coordinateMode=mode; const isWgs=mode==='wgs84';
+      btnWgs84.classList.toggle('is-active',isWgs); btnVn2000.classList.toggle('is-active',!isWgs);
+      btnWgs84.setAttribute('aria-pressed',String(isWgs)); btnVn2000.setAttribute('aria-pressed',String(!isWgs));
+      if(lastLngLat) renderCoordinate(lastLngLat);
     }
+    btnWgs84.addEventListener('click',()=>setCoordinateMode('wgs84'));
+    btnVn2000.addEventListener('click',()=>setCoordinateMode('vn2000'));
 
-    btnWgs84.addEventListener('click', () => setCoordinateMode('wgs84'));
-    btnVn2000.addEventListener('click', () => setCoordinateMode('vn2000'));
-
-    function suppressDuplicateBienDong(rawMap) {
-      const style = rawMap.getStyle();
-      if (!style || !Array.isArray(style.layers)) return;
-
-      style.layers.forEach((layer) => {
-        if (
-          layer.type !== 'symbol' ||
-          String(layer.id || '').startsWith('vietflex-') ||
-          !layer.layout ||
-          layer.layout['text-field'] === undefined
-        ) return;
-
-        try {
-          const current = rawMap.getLayoutProperty(layer.id, 'text-field');
-          if (current === undefined || current === null) return;
-          const featureName = ['coalesce', ['get', 'name:vi'], ['get', 'name_vi'], ['get', 'name']];
-          rawMap.setLayoutProperty(layer.id, 'text-field', [
-            'case',
-            ['==', featureName, 'Biển Đông'],
-            '',
-            current
-          ]);
-        } catch (_) {}
-      });
+    let measuring=false, measurePoints=[];
+    const measureToggle=document.getElementById('vf-measure-toggle');
+    const measureStatus=document.getElementById('vf-measure-status');
+    function haversine(a,b){
+      const R=6371008.8, d2r=Math.PI/180;
+      const p1=a[1]*d2r, p2=b[1]*d2r, dp=(b[1]-a[1])*d2r, dl=(b[0]-a[0])*d2r;
+      const h=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;
+      return 2*R*Math.atan2(Math.sqrt(h),Math.sqrt(1-h));
     }
-
-    map.ready((rawMap) => {
-      const apply = () => setTimeout(() => suppressDuplicateBienDong(rawMap), 0);
-      rawMap.on('style.load', apply);
-      if (rawMap.isStyleLoaded()) apply();
-
-      rawMap.on('mousemove', (event) => {
-        lastLngLat = event.lngLat;
-        renderCoordinate(event.lngLat);
-      });
-
-      rawMap.getCanvas().addEventListener('mouseleave', () => {
-        lastLngLat = null;
-        coordValue.textContent = 'Rê chuột trên bản đồ';
-      });
+    function renderMeasure(rawMap){
+      if(!rawMap.getSource('vf-measure')) rawMap.addSource('vf-measure',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+      if(!rawMap.getLayer('vf-measure-line')) rawMap.addLayer({id:'vf-measure-line',type:'line',source:'vf-measure',paint:{'line-color':'#1565c0','line-width':3}});
+      if(!rawMap.getLayer('vf-measure-points')) rawMap.addLayer({id:'vf-measure-points',type:'circle',source:'vf-measure',paint:{'circle-radius':5,'circle-color':'#fff','circle-stroke-color':'#1565c0','circle-stroke-width':2}});
+      const features=[];
+      if(measurePoints.length>1) features.push({type:'Feature',geometry:{type:'LineString',coordinates:measurePoints},properties:{}});
+      measurePoints.forEach(p=>features.push({type:'Feature',geometry:{type:'Point',coordinates:p},properties:{}}));
+      rawMap.getSource('vf-measure').setData({type:'FeatureCollection',features});
+      let total=0; for(let i=1;i<measurePoints.length;i++) total+=haversine(measurePoints[i-1],measurePoints[i]);
+      if(measurePoints.length>1) measureStatus.textContent=`Khoảng cách: ${total>=1000?(total/1000).toFixed(2)+' km':total.toFixed(1)+' m'} · Bấm tiếp để cộng đoạn.`;
+    }
+    measureToggle.addEventListener('click',()=>{
+      measuring=!measuring; measurePoints=[]; measureStatus.classList.toggle('is-open',measuring); measureToggle.style.background=measuring?'#eaf3ff':'';
+      if(!measuring) measureStatus.textContent='Bấm các điểm trên bản đồ để đo khoảng cách. Bấm “Thước đo” lần nữa để kết thúc.';
+      map.ready(rawMap=>{ if(rawMap.getSource('vf-measure')) renderMeasure(rawMap); rawMap.getCanvas().style.cursor=measuring?'crosshair':''; });
     });
 
-    if (Vietflex.CoreTech) {
-      Vietflex.CoreTech.configure({ language: 'vi', datasetVersion: 'dev' });
-      Vietflex.CoreTech.Adapters.register('maplibre', {}, {
-        kind: 'maplibre', status: 'active', role: 'renderer'
+    const searchToggle=document.getElementById('vf-search-toggle');
+    const searchBox=document.getElementById('vf-search-box');
+    const searchInput=document.getElementById('vf-search-input');
+    searchToggle.addEventListener('click',()=>searchBox.classList.toggle('is-open'));
+    function runCoordinateSearch(){
+      const m=searchInput.value.trim().match(/^\s*(-?\d+(?:\.\d+)?)\s*[,; ]\s*(-?\d+(?:\.\d+)?)\s*$/);
+      if(!m){ searchInput.setCustomValidity('Nhập dạng: vĩ độ, kinh độ'); searchInput.reportValidity(); return; }
+      searchInput.setCustomValidity(''); const lat=Number(m[1]), lon=Number(m[2]);
+      if(Math.abs(lat)>90||Math.abs(lon)>180){ searchInput.setCustomValidity('Tọa độ không hợp lệ'); searchInput.reportValidity(); return; }
+      map.flyTo({center:[lat,lon],zoom:16});
+    }
+    document.getElementById('vf-search-go').addEventListener('click',runCoordinateSearch);
+    searchInput.addEventListener('keydown',e=>{ if(e.key==='Enter') runCoordinateSearch(); });
+
+    document.getElementById('vf-geolocate').addEventListener('click',()=>{
+      if(!navigator.geolocation){ alert('Trình duyệt không hỗ trợ định vị.'); return; }
+      navigator.geolocation.getCurrentPosition(pos=>map.flyTo({center:[pos.coords.latitude,pos.coords.longitude],zoom:16}),()=>alert('Không thể lấy vị trí. Hãy kiểm tra quyền định vị của trình duyệt.'),{enableHighAccuracy:true,timeout:10000});
+    });
+    document.getElementById('vf-print').addEventListener('click',()=>window.print());
+
+    function suppressDuplicateBienDong(rawMap){
+      const style=rawMap.getStyle(); if(!style||!Array.isArray(style.layers)) return;
+      style.layers.forEach(layer=>{
+        if(layer.type!=='symbol'||String(layer.id||'').startsWith('vietflex-')||!layer.layout||layer.layout['text-field']===undefined) return;
+        try{ const current=rawMap.getLayoutProperty(layer.id,'text-field'); if(current==null) return;
+          const featureName=['coalesce',['get','name:vi'],['get','name_vi'],['get','name']];
+          rawMap.setLayoutProperty(layer.id,'text-field',['case',['==',featureName,'Biển Đông'],'',current]);
+        }catch(_){}
       });
-      Vietflex.CoreTech.Gateways.register('cdn', {}, {
-        port: 'cdn', status: 'active', role: 'static-distribution'
-      });
+    }
+
+    map.ready(rawMap=>{
+      const apply=()=>setTimeout(()=>suppressDuplicateBienDong(rawMap),0);
+      rawMap.on('style.load',apply); if(rawMap.isStyleLoaded()) apply();
+      rawMap.on('mousemove',e=>{ lastLngLat=e.lngLat; renderCoordinate(e.lngLat); });
+      rawMap.on('click',e=>{ if(measuring){ measurePoints.push([e.lngLat.lng,e.lngLat.lat]); renderMeasure(rawMap); } });
+    });
+
+    document.addEventListener('click',()=>{ toolsPanel.classList.remove('is-open'); toolsToggle.setAttribute('aria-expanded','false'); setAttributionOpen(false); });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ toolsPanel.classList.remove('is-open'); setAttributionOpen(false); } });
+
+    if(Vietflex.CoreTech){
+      Vietflex.CoreTech.configure({language:'vi',datasetVersion:'dev'});
+      Vietflex.CoreTech.Adapters.register('maplibre',{}, {kind:'maplibre',status:'active',role:'renderer'});
+      Vietflex.CoreTech.Gateways.register('cdn',{}, {port:'cdn',status:'active',role:'static-distribution'});
     }
   </script>
 </body>
