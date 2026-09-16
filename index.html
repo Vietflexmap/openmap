@@ -3,11 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Vietflex Map Core — Bản đồ nền mã nguồn mở</title>
+  <title>Vietflex Platform Core — Bản đồ nền mã nguồn mở</title>
 
   <link rel="stylesheet" href="./dist/vietflex.css">
   <script src="./dist/vietflex.js"></script>
   <script src="./dist/vietflex-core.js"></script>
+  <script src="./dist/vietflex-platform.js"></script>
 
   <style>
     html, body { margin: 0; height: 100%; }
@@ -30,8 +31,8 @@
 <body>
   <div id="map"></div>
   <div class="core-badge">
-    <strong>Vietflex Map Core</strong>
-    Basemap · Places · Road Graph
+    <strong>Vietflex Platform Core</strong>
+    Basemap · Places · Road Graph · IoT · GeoAI
   </div>
 
   <script>
@@ -54,11 +55,10 @@
     }).addTo(map);
 
     new Vietflex.Marker([21.0285, 105.8542])
-      .bindPopup('<strong>Hà Nội</strong><br>Vietflex Map Core + MapLibre')
+      .bindPopup('<strong>Hà Nội</strong><br>Vietflex Platform Core + MapLibre')
       .addTo(map);
 
     // Giữ duy nhất nhãn Biển Đông do lớp tham chiếu Vietflex quản lý.
-    // Các nhãn cùng tên từ basemap bootstrap được ẩn để tránh lặp chữ.
     function suppressDuplicateBienDong(rawMap) {
       const style = rawMap.getStyle();
       if (!style || !Array.isArray(style.layers)) return;
@@ -88,9 +88,7 @@
             '',
             current
           ]);
-        } catch (_) {
-          // Không làm hỏng style bên thứ ba nếu layer dùng biểu thức đặc biệt.
-        }
+        } catch (_) {}
       });
     }
 
@@ -100,9 +98,13 @@
       if (rawMap.isStyleLoaded()) apply();
     });
 
-    // Search/Routing endpoints are intentionally NOT hard-coded.
-    // Configure self-hosted services before using Vietflex.Core.places()/routing().
+    Vietflex.Platform.configure({
+      language: 'vi',
+      datasetVersion: 'dev'
+    });
+
     console.info('Vietflex Core', Vietflex.Core.getConfig());
+    console.info('Vietflex Platform', Vietflex.Platform.getConfig());
   </script>
 </body>
 </html>
