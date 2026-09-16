@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vietflexmap.github.io/openmap/schema/vietflex-layer.schema.json",
+  "title": "Vietflex Layer Contract",
+  "description": "Stable contract for thematic GIS layers. Data providers and renderers remain replaceable adapters.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["id", "name", "group", "type", "source", "capabilities"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^vf\\.[a-z0-9._-]+$" },
+    "name": { "type": "string", "minLength": 1 },
+    "group": { "type": "string", "enum": ["administrative", "hydrology", "soil", "crops", "planning", "transport", "environment", "weather", "forest", "iot", "imagery", "terrain", "other"] },
+    "type": { "type": "string", "enum": ["vector", "raster", "live"] },
+    "schema_version": { "type": "string", "default": "1.0.0" },
+    "dataset_id": { "type": ["string", "null"] },
+    "source": {
+      "type": "object",
+      "required": ["adapter"],
+      "properties": {
+        "adapter": { "type": "string", "enum": ["pmtiles", "mvt", "geojson", "cog", "wms", "wmts", "xyz", "postgis", "api", "mqtt", "websocket"] },
+        "uri": { "type": ["string", "null"] },
+        "layer": { "type": ["string", "null"] },
+        "endpoint": { "type": ["string", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "render": {
+      "type": "object",
+      "properties": {
+        "style": { "type": ["string", "object", "null"] },
+        "minzoom": { "type": ["number", "null"] },
+        "maxzoom": { "type": ["number", "null"] },
+        "z_index": { "type": ["integer", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "enum": ["render", "toggle", "identify", "filter", "legend", "opacity", "query", "time", "export"] }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "crs": { "type": "string" },
+        "bbox": { "type": ["array", "null"], "minItems": 4, "maxItems": 4, "items": { "type": "number" } },
+        "license": { "type": ["string", "null"] },
+        "source": { "type": ["string", "null"] },
+        "version": { "type": ["string", "null"] },
+        "updated_at": { "type": ["string", "null"] },
+        "quality": { "type": ["object", "null"] },
+        "provenance": { "type": ["object", "null"] }
+      },
+      "additionalProperties": true
+    }
+  }
+}
