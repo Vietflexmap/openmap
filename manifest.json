@@ -1,0 +1,53 @@
+{
+  "name": "VIETFLEX CORE TECH",
+  "version": "0.4.0",
+  "architecture": "ports-and-adapters",
+  "description_vi": "Lõi công nghệ nền dùng chung cho bản đồ, dữ liệu không gian, AI, IoT và các ứng dụng Vietflex.",
+  "core": {
+    "schema": true,
+    "capability": true,
+    "event": true,
+    "domain_services": true,
+    "data": true,
+    "spatial": true,
+    "temporal": true
+  },
+  "adapters": [
+    "PostGIS",
+    "GPKG",
+    "PMTiles",
+    "COG",
+    "Object Storage",
+    "MapLibre",
+    "Valhalla",
+    "Photon",
+    "MQTT",
+    "GeoAI",
+    "Device Drivers"
+  ],
+  "ports": {
+    "cdn": { "status": "active", "role": "static SDK/schema/style/plugin distribution" },
+    "api": { "status": "planned", "role": "HTTP service gateway" },
+    "mcp": { "status": "planned", "role": "AI/agent gateway" },
+    "events": { "status": "planned", "role": "WebSocket/MQTT/event gateway" }
+  },
+  "sdk_plugins": {
+    "javascript": "active",
+    "plugin_contract": "defined",
+    "python": "planned",
+    "mobile": "planned"
+  },
+  "schema_version": "0.4.0",
+  "dataset_version": null,
+  "principles": [
+    "stable-domain-core",
+    "schema-first",
+    "capability-first",
+    "ports-and-adapters",
+    "backend-neutral",
+    "plugin-extensible",
+    "versioned-data",
+    "provenance-and-qa",
+    "vietnamese-first"
+  ]
+}
