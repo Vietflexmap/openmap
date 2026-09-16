@@ -1,0 +1,70 @@
+{
+  "schema": "vietflex-data-catalog/1.0",
+  "requirements": ["id", "title", "source", "license", "version", "updated_at", "crs", "bbox", "quality", "provenance"],
+  "datasets": [
+    {
+      "id": "ds.vn.administrative.boundaries",
+      "title": "Địa giới hành chính Việt Nam",
+      "domain": "administrative",
+      "status": "awaiting-data",
+      "source": null,
+      "license": null,
+      "version": null,
+      "updated_at": null,
+      "crs": "EPSG:4326",
+      "bbox": [102.0, 8.0, 110.0, 24.0],
+      "resolution": null,
+      "schema": "vf.administrative/1.0",
+      "quality": {},
+      "provenance": {}
+    },
+    {
+      "id": "ds.vn.hydrology.network",
+      "title": "Mạng lưới thủy văn Việt Nam",
+      "domain": "hydrology",
+      "status": "awaiting-data",
+      "source": null,
+      "license": null,
+      "version": null,
+      "updated_at": null,
+      "crs": "EPSG:4326",
+      "bbox": [102.0, 8.0, 110.0, 24.0],
+      "resolution": null,
+      "schema": "vf.hydrology/1.0",
+      "quality": {},
+      "provenance": {}
+    },
+    {
+      "id": "ds.vn.soil.classification",
+      "title": "Phân loại thổ nhưỡng Việt Nam",
+      "domain": "soil",
+      "status": "awaiting-data",
+      "source": null,
+      "license": null,
+      "version": null,
+      "updated_at": null,
+      "crs": "EPSG:4326",
+      "bbox": [102.0, 8.0, 110.0, 24.0],
+      "resolution": null,
+      "schema": "vf.soil/1.0",
+      "quality": {},
+      "provenance": {}
+    },
+    {
+      "id": "ds.vn.crops.inventory",
+      "title": "Hiện trạng cây trồng Việt Nam",
+      "domain": "crops",
+      "status": "awaiting-data",
+      "source": null,
+      "license": null,
+      "version": null,
+      "updated_at": null,
+      "crs": "EPSG:4326",
+      "bbox": [102.0, 8.0, 110.0, 24.0],
+      "resolution": null,
+      "schema": "vf.crops/1.0",
+      "quality": {},
+      "provenance": {}
+    }
+  ]
+}
