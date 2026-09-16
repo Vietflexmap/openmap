@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Vietflex OpenMap</title>
 
-  <link rel="stylesheet" href="./dist/vietflex.css?v=20260916-0845">
-  <script src="./dist/vietflex.js?v=20260916-0845"></script>
-  <script src="./dist/vietflex-core.js?v=20260916-0845"></script>
-  <script src="./dist/vietflex-platform.js?v=20260916-0845"></script>
+  <link rel="stylesheet" href="./dist/vietflex.css?v=20260916-0900">
+  <script src="./dist/vietflex.js?v=20260916-0900"></script>
+  <script src="./dist/vietflex-core.js?v=20260916-0900"></script>
+  <script src="./dist/vietflex-platform.js?v=20260916-0900"></script>
 
   <style>
     html, body {
@@ -97,10 +97,61 @@
     .vf-attrib-panel a { color: #1565c0; text-decoration: none; }
     .vf-attrib-panel a:hover { text-decoration: underline; }
 
+    /* Tọa độ rê chuột: đặt sát thước tỷ lệ ở góc trái dưới. */
+    .vf-coordinate-control {
+      position: absolute;
+      left: 118px;
+      bottom: 6px;
+      z-index: 998;
+      display: inline-flex;
+      align-items: stretch;
+      min-height: 28px;
+      border: 1px solid rgba(0,0,0,.12);
+      border-radius: 6px;
+      background: rgba(255,255,255,.96);
+      box-shadow: 0 1px 4px rgba(0,0,0,.15);
+      overflow: hidden;
+      color: #17212b;
+      font: 11px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    .vf-coordinate-modes {
+      display: inline-flex;
+      border-right: 1px solid rgba(0,0,0,.10);
+    }
+
+    .vf-coordinate-mode {
+      border: 0;
+      border-right: 1px solid rgba(0,0,0,.08);
+      background: transparent;
+      color: #53606d;
+      font: 700 10px/1 system-ui, sans-serif;
+      padding: 0 8px;
+      cursor: pointer;
+    }
+
+    .vf-coordinate-mode:last-child { border-right: 0; }
+    .vf-coordinate-mode.is-active { color: #0d47a1; background: #eaf3ff; }
+    .vf-coordinate-mode:hover { background: #f4f7fa; }
+
+    .vf-coordinate-value {
+      min-width: 238px;
+      display: flex;
+      align-items: center;
+      padding: 0 9px;
+      white-space: nowrap;
+    }
+
     @media (max-width: 700px) {
       .vf-map-credit { right: 44px; bottom: 5px; }
       .vf-attrib-wrap { right: 6px; bottom: 5px; }
       .vf-attrib-panel { max-width: calc(100vw - 20px); }
+      .vf-coordinate-control {
+        left: 8px;
+        bottom: 38px;
+        max-width: calc(100vw - 16px);
+      }
+      .vf-coordinate-value { min-width: 180px; }
     }
   </style>
 </head>
@@ -141,6 +192,14 @@
     </div>
   </div>
 
+  <div class="vf-coordinate-control" aria-label="Hiển thị tọa độ con trỏ">
+    <div class="vf-coordinate-modes" role="group" aria-label="Hệ tọa độ">
+      <button id="vf-mode-wgs84" class="vf-coordinate-mode is-active" type="button" aria-pressed="true">WGS84</button>
+      <button id="vf-mode-vn2000" class="vf-coordinate-mode" type="button" aria-pressed="false" title="VN2000 tham chiếu UTM 48N/49N; hồ sơ địa chính cần cấu hình kinh tuyến trục/múi theo địa phương">VN2000</button>
+    </div>
+    <div id="vf-coordinate-value" class="vf-coordinate-value">Rê chuột trên bản đồ</div>
+  </div>
+
   <script>
     const map = Vietflex.vietflexMap('map', {
       basemap: 'streets',
@@ -175,6 +234,84 @@
       if (event.key === 'Escape') setAttributionOpen(false);
     });
 
+    // Chuyển WGS84 -> UTM (ellipsoid WGS84) dùng cho hiển thị VN2000 tham chiếu.
+    // Việt Nam chủ yếu thuộc UTM 48N và 49N; zone được chọn tự động theo kinh độ.
+    function wgs84ToUTM(latDeg, lonDeg) {
+      const zone = Math.max(1, Math.min(60, Math.floor((lonDeg + 180) / 6) + 1));
+      const a = 6378137.0;
+      const f = 1 / 298.257223563;
+      const e2 = f * (2 - f);
+      const ep2 = e2 / (1 - e2);
+      const k0 = 0.9996;
+      const lat = latDeg * Math.PI / 180;
+      const lon = lonDeg * Math.PI / 180;
+      const lon0 = ((zone - 1) * 6 - 180 + 3) * Math.PI / 180;
+
+      const sinLat = Math.sin(lat);
+      const cosLat = Math.cos(lat);
+      const tanLat = Math.tan(lat);
+      const N = a / Math.sqrt(1 - e2 * sinLat * sinLat);
+      const T = tanLat * tanLat;
+      const C = ep2 * cosLat * cosLat;
+      const A = cosLat * (lon - lon0);
+
+      const M = a * (
+        (1 - e2 / 4 - 3 * e2 * e2 / 64 - 5 * e2 * e2 * e2 / 256) * lat
+        - (3 * e2 / 8 + 3 * e2 * e2 / 32 + 45 * e2 * e2 * e2 / 1024) * Math.sin(2 * lat)
+        + (15 * e2 * e2 / 256 + 45 * e2 * e2 * e2 / 1024) * Math.sin(4 * lat)
+        - (35 * e2 * e2 * e2 / 3072) * Math.sin(6 * lat)
+      );
+
+      const easting = 500000 + k0 * N * (
+        A + (1 - T + C) * Math.pow(A, 3) / 6
+        + (5 - 18 * T + T * T + 72 * C - 58 * ep2) * Math.pow(A, 5) / 120
+      );
+
+      let northing = k0 * (
+        M + N * tanLat * (
+          A * A / 2
+          + (5 - T + 9 * C + 4 * C * C) * Math.pow(A, 4) / 24
+          + (61 - 58 * T + T * T + 600 * C - 330 * ep2) * Math.pow(A, 6) / 720
+        )
+      );
+
+      if (latDeg < 0) northing += 10000000;
+      return { zone, easting, northing };
+    }
+
+    const coordValue = document.getElementById('vf-coordinate-value');
+    const btnWgs84 = document.getElementById('vf-mode-wgs84');
+    const btnVn2000 = document.getElementById('vf-mode-vn2000');
+    let coordinateMode = 'wgs84';
+    let lastLngLat = null;
+
+    function setCoordinateMode(mode) {
+      coordinateMode = mode;
+      const isWgs = mode === 'wgs84';
+      btnWgs84.classList.toggle('is-active', isWgs);
+      btnVn2000.classList.toggle('is-active', !isWgs);
+      btnWgs84.setAttribute('aria-pressed', String(isWgs));
+      btnVn2000.setAttribute('aria-pressed', String(!isWgs));
+      if (lastLngLat) renderCoordinate(lastLngLat);
+    }
+
+    function renderCoordinate(lngLat) {
+      const lon = Number(lngLat.lng);
+      const lat = Number(lngLat.lat);
+      if (!Number.isFinite(lon) || !Number.isFinite(lat)) return;
+
+      if (coordinateMode === 'wgs84') {
+        coordValue.textContent = `Lat ${lat.toFixed(6)}°  Lon ${lon.toFixed(6)}°`;
+      } else {
+        const utm = wgs84ToUTM(lat, lon);
+        const zone = utm.zone === 48 || utm.zone === 49 ? utm.zone : utm.zone;
+        coordValue.textContent = `X ${utm.northing.toFixed(3)}  Y ${utm.easting.toFixed(3)}  Z${zone}N`;
+      }
+    }
+
+    btnWgs84.addEventListener('click', () => setCoordinateMode('wgs84'));
+    btnVn2000.addEventListener('click', () => setCoordinateMode('vn2000'));
+
     function suppressDuplicateBienDong(rawMap) {
       const style = rawMap.getStyle();
       if (!style || !Array.isArray(style.layers)) return;
@@ -205,6 +342,16 @@
       const apply = () => setTimeout(() => suppressDuplicateBienDong(rawMap), 0);
       rawMap.on('style.load', apply);
       if (rawMap.isStyleLoaded()) apply();
+
+      rawMap.on('mousemove', (event) => {
+        lastLngLat = event.lngLat;
+        renderCoordinate(event.lngLat);
+      });
+
+      rawMap.getCanvas().addEventListener('mouseleave', () => {
+        lastLngLat = null;
+        coordValue.textContent = 'Rê chuột trên bản đồ';
+      });
     });
 
     if (Vietflex.CoreTech) {
