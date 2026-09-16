@@ -1,4 +1,4 @@
-/* Vietflex OpenMap — Basemap Plugin v0.3.0
+/* Vietflex OpenMap — Basemap Plugin v0.3.1
  * Basemaps stay outside Core Tech. UI calls this registry, registry applies renderer adapters.
  * Terrain uses a Vietflex-managed raster-dem namespace and never depends on OpenTopoMap.
  * Vietflex Basemap is a self-hosted administrative raster package derived from the uploaded XYZ tile set.
@@ -6,7 +6,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION = '0.3.0';
+  const VERSION = '0.3.1';
   const currentScriptSrc =
     typeof document !== 'undefined' && document.currentScript && document.currentScript.src
       ? document.currentScript.src
@@ -80,6 +80,19 @@
       core: false,
       capabilities: ['raster', 'administrative', 'offline-ready', 'self-hosted'],
       fallback: 'simple'
+    },
+    tedp: {
+      id: 'tedp',
+      name: 'Vietflex TEDP',
+      kind: 'raster-xyz',
+      tiles: ['https://tedp.vn/api/map/proxy-tile/{z}/{x}/{y}'],
+      tileSize: 256,
+      minzoom: 3,
+      maxzoom: 18,
+      provider: 'TEDP trực tuyến',
+      attribution: 'Nguồn ảnh nền: TEDP (tedp.vn)',
+      core: false,
+      capabilities: ['raster', 'administrative', 'online']
     }
   });
 

@@ -48,6 +48,23 @@
       "capabilities": ["raster", "administrative", "offline-ready", "self-hosted"],
       "fallback": "simple",
       "replaceable_adapter": true
+    },
+    {
+      "id": "tedp",
+      "name": "Vietflex TEDP",
+      "kind": "raster-xyz",
+      "provider": "TEDP trực tuyến",
+      "source": "https://tedp.vn/api/map/proxy-tile/{z}/{x}/{y}",
+      "tile_size": 256,
+      "minzoom": 3,
+      "maxzoom": 18,
+      "attribution": "Nguồn ảnh nền: TEDP (tedp.vn)",
+      "capabilities": [
+        "raster",
+        "administrative",
+        "online"
+      ],
+      "replaceable_adapter": true
     }
   ],
   "principles": [
