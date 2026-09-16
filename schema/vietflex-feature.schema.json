@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vietflexmap.github.io/openmap/schema/vietflex-feature.schema.json",
+  "title": "Vietflex Feature",
+  "type": "object",
+  "required": ["vf_id", "vf_type", "schema_version"],
+  "properties": {
+    "vf_id": { "type": "string", "minLength": 1 },
+    "vf_type": { "type": "string", "minLength": 1 },
+    "schema_version": { "type": "string" },
+    "dataset_version": { "type": ["string", "null"] },
+    "source": { "type": ["string", "null"] },
+    "source_id": { "type": ["string", "null"] },
+    "name_vi": { "type": ["string", "null"] },
+    "name": { "type": ["string", "null"] },
+    "observed_at": { "type": ["string", "null"], "format": "date-time" },
+    "ingested_at": { "type": ["string", "null"], "format": "date-time" },
+    "geometry": { "type": ["object", "null"] },
+    "properties": { "type": "object" },
+    "metadata": { "type": "object" }
+  },
+  "additionalProperties": true
+}
