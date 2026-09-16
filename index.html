@@ -57,6 +57,49 @@
       .bindPopup('<strong>Hà Nội</strong><br>Vietflex Map Core + MapLibre')
       .addTo(map);
 
+    // Giữ duy nhất nhãn Biển Đông do lớp tham chiếu Vietflex quản lý.
+    // Các nhãn cùng tên từ basemap bootstrap được ẩn để tránh lặp chữ.
+    function suppressDuplicateBienDong(rawMap) {
+      const style = rawMap.getStyle();
+      if (!style || !Array.isArray(style.layers)) return;
+
+      style.layers.forEach((layer) => {
+        if (
+          layer.type !== 'symbol' ||
+          String(layer.id || '').startsWith('vietflex-') ||
+          !layer.layout ||
+          layer.layout['text-field'] === undefined
+        ) return;
+
+        try {
+          const current = rawMap.getLayoutProperty(layer.id, 'text-field');
+          if (current === undefined || current === null) return;
+
+          const featureName = [
+            'coalesce',
+            ['get', 'name:vi'],
+            ['get', 'name_vi'],
+            ['get', 'name']
+          ];
+
+          rawMap.setLayoutProperty(layer.id, 'text-field', [
+            'case',
+            ['==', featureName, 'Biển Đông'],
+            '',
+            current
+          ]);
+        } catch (_) {
+          // Không làm hỏng style bên thứ ba nếu layer dùng biểu thức đặc biệt.
+        }
+      });
+    }
+
+    map.ready((rawMap) => {
+      const apply = () => setTimeout(() => suppressDuplicateBienDong(rawMap), 0);
+      rawMap.on('style.load', apply);
+      if (rawMap.isStyleLoaded()) apply();
+    });
+
     // Search/Routing endpoints are intentionally NOT hard-coded.
     // Configure self-hosted services before using Vietflex.Core.places()/routing().
     console.info('Vietflex Core', Vietflex.Core.getConfig());
