@@ -1,0 +1,29 @@
+{
+  "schema": "vietflex-terrain/0.1",
+  "status": "awaiting-data",
+  "data_ready": false,
+  "dataset_version": null,
+  "dem_source": "Vietflex managed DEM",
+  "coverage": "Vietnam",
+  "crs": "EPSG:3857 tiles derived from geographic DEM",
+  "encoding": "mapbox",
+  "tile_size": 256,
+  "minzoom": 0,
+  "maxzoom": 14,
+  "tile_template": "./terrain-rgb/{z}/{x}/{y}.png",
+  "terrain_exaggeration": 1.15,
+  "hillshade_exaggeration": 0.42,
+  "attribution": "Vietflex DEM",
+  "contours": {
+    "ready": false,
+    "tiles": ["./contours/{z}/{x}/{y}.pbf"],
+    "source_layer": "contours",
+    "minzoom": 7,
+    "maxzoom": 14
+  },
+  "notes": [
+    "Set status to ready and data_ready to true only after terrain-rgb tiles are published.",
+    "DEM data is outside Core Tech; this manifest is the adapter contract.",
+    "Keep source licensing and provenance in this manifest when a production DEM dataset is selected."
+  ]
+}
