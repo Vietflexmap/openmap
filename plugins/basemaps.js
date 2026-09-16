@@ -1,11 +1,12 @@
-/* Vietflex OpenMap — Basemap Plugin v0.2.0
+/* Vietflex OpenMap — Basemap Plugin v0.3.0
  * Basemaps stay outside Core Tech. UI calls this registry, registry applies renderer adapters.
  * Terrain uses a Vietflex-managed raster-dem namespace and never depends on OpenTopoMap.
+ * Vietflex Basemap is a self-hosted administrative raster package derived from the uploaded XYZ tile set.
  */
 (function (global) {
   'use strict';
 
-  const VERSION = '0.2.0';
+  const VERSION = '0.3.0';
   const currentScriptSrc =
     typeof document !== 'undefined' && document.currentScript && document.currentScript.src
       ? document.currentScript.src
@@ -20,6 +21,7 @@
 
   const ROOT = assetRoot || '.';
   const TERRAIN_MANIFEST_URL = ROOT + '/terrain/manifest.json';
+  const VIETFLEX_BASEMAP_MANIFEST_URL = ROOT + '/basemaps/vietflex/manifest.json';
 
   const REGISTRY = Object.freeze({
     simple: {
@@ -67,13 +69,26 @@
       attribution: 'Sources: Esri and World Imagery data providers',
       core: false,
       capabilities: ['raster', 'satellite', 'imagery']
+    },
+    vietflex: {
+      id: 'vietflex',
+      name: 'Vietflex Basemap',
+      kind: 'raster-package',
+      manifest: VIETFLEX_BASEMAP_MANIFEST_URL,
+      provider: 'Vietflex self-hosted raster',
+      attribution: 'Vietflex Basemap · nguồn dữ liệu gốc cần được xác minh quyền tái phân phối trước khi phát hành chính thức',
+      core: false,
+      capabilities: ['raster', 'administrative', 'offline-ready', 'self-hosted'],
+      fallback: 'simple'
     }
   });
 
   const ALIASES = Object.freeze({
     light: 'simple',
     positron: 'simple',
-    fiord: 'terrain'
+    fiord: 'terrain',
+    admin: 'vietflex',
+    'admin-raster': 'vietflex'
   });
 
   function resolve(id) {
@@ -90,7 +105,8 @@
           type: 'raster',
           tiles: definition.tiles,
           tileSize: definition.tileSize || 256,
-          maxzoom: definition.maxzoom || 19,
+          minzoom: Number.isFinite(definition.minzoom) ? definition.minzoom : 0,
+          maxzoom: Number.isFinite(definition.maxzoom) ? definition.maxzoom : 19,
           attribution: definition.attribution || ''
         }
       },
@@ -110,16 +126,20 @@
     return definition.kind === 'raster-xyz' ? rasterStyle(definition) : definition.style;
   }
 
-  async function loadTerrainManifest(definition) {
+  async function loadJsonManifest(url) {
     try {
-      const response = await fetch(definition.manifest, { cache: 'no-store' });
+      const response = await fetch(url, { cache: 'no-store' });
       if (!response.ok) return null;
-      const manifest = await response.json();
-      if (!manifest || manifest.status !== 'ready' || manifest.data_ready !== true) return null;
-      return manifest;
+      return await response.json();
     } catch (_) {
       return null;
     }
+  }
+
+  async function loadTerrainManifest(definition) {
+    const manifest = await loadJsonManifest(definition.manifest);
+    if (!manifest || manifest.status !== 'ready' || manifest.data_ready !== true) return null;
+    return manifest;
   }
 
   function waitForStyle(rawMap) {
@@ -144,9 +164,7 @@
 
     const manifest = await loadTerrainManifest(definition);
     if (!manifest) {
-      try {
-        rawMap.getContainer().dataset.vietflexTerrain = 'awaiting-data';
-      } catch (_) {}
+      try { rawMap.getContainer().dataset.vietflexTerrain = 'awaiting-data'; } catch (_) {}
       return Object.assign({}, definition, {
         status: 'awaiting-data',
         message: 'Vietflex DEM chưa được publish; đang hiển thị nền Simple an toàn.'
@@ -154,19 +172,12 @@
     }
 
     const demTiles = (manifest.tiles || []).map(normalizeTileUrl).filter(Boolean);
-    if (!demTiles.length && manifest.tile_template) {
-      demTiles.push(normalizeTileUrl(manifest.tile_template));
-    }
-    if (!demTiles.length) {
-      return Object.assign({}, definition, { status: 'invalid-manifest' });
-    }
+    if (!demTiles.length && manifest.tile_template) demTiles.push(normalizeTileUrl(manifest.tile_template));
+    if (!demTiles.length) return Object.assign({}, definition, { status: 'invalid-manifest' });
 
     const sourceId = 'vietflex-dem';
     const hillshadeId = 'vietflex-dem-hillshade';
-
-    if (rawMap.getTerrain()) {
-      try { rawMap.setTerrain(null); } catch (_) {}
-    }
+    if (rawMap.getTerrain()) { try { rawMap.setTerrain(null); } catch (_) {} }
     if (rawMap.getLayer(hillshadeId)) rawMap.removeLayer(hillshadeId);
     if (rawMap.getSource(sourceId)) rawMap.removeSource(sourceId);
 
@@ -192,10 +203,7 @@
       }
     });
 
-    rawMap.setTerrain({
-      source: sourceId,
-      exaggeration: Number(manifest.terrain_exaggeration) || 1.15
-    });
+    rawMap.setTerrain({ source: sourceId, exaggeration: Number(manifest.terrain_exaggeration) || 1.15 });
 
     if (manifest.contours && manifest.contours.ready && manifest.contours.tiles) {
       const contourSource = 'vietflex-contours';
@@ -224,14 +232,53 @@
       }
     }
 
-    try {
-      rawMap.getContainer().dataset.vietflexTerrain = 'ready';
-    } catch (_) {}
-
+    try { rawMap.getContainer().dataset.vietflexTerrain = 'ready'; } catch (_) {}
     return Object.assign({}, definition, {
       status: 'ready',
       datasetVersion: manifest.dataset_version || null,
       demSource: manifest.dem_source || null
+    });
+  }
+
+  async function applyRasterPackage(rawMap, definition) {
+    const manifest = await loadJsonManifest(definition.manifest);
+    if (!manifest || manifest.status !== 'ready' || manifest.data_ready !== true) {
+      rawMap.setStyle(REGISTRY.simple.style);
+      try { rawMap.getContainer().dataset.vietflexRasterPackage = 'awaiting-data'; } catch (_) {}
+      return Object.assign({}, definition, {
+        status: 'awaiting-data',
+        message: 'Gói Vietflex Basemap đã được đăng ký nhưng tile raster chưa được publish lên CDN/GitHub Pages; đang fallback về Vietflex Simple.'
+      });
+    }
+
+    const templates = [];
+    (manifest.tiles || []).forEach(function (url) {
+      const normalized = normalizeTileUrl(url);
+      if (normalized) templates.push(normalized);
+    });
+    if (!templates.length && manifest.tile_template) {
+      const normalized = normalizeTileUrl(manifest.tile_template);
+      if (normalized) templates.push(normalized);
+    }
+    if (!templates.length) {
+      rawMap.setStyle(REGISTRY.simple.style);
+      return Object.assign({}, definition, { status: 'invalid-manifest' });
+    }
+
+    const runtimeDef = Object.assign({}, definition, {
+      kind: 'raster-xyz',
+      tiles: templates,
+      tileSize: Number(manifest.tile_size) || 256,
+      minzoom: Number.isFinite(manifest.minzoom) ? manifest.minzoom : 3,
+      maxzoom: Number.isFinite(manifest.maxzoom) ? manifest.maxzoom : 12,
+      attribution: manifest.attribution || definition.attribution
+    });
+    rawMap.setStyle(rasterStyle(runtimeDef));
+    try { rawMap.getContainer().dataset.vietflexRasterPackage = 'ready'; } catch (_) {}
+    return Object.assign({}, definition, {
+      status: 'ready',
+      storage: manifest.storage || 'xyz',
+      datasetVersion: manifest.dataset_version || null
     });
   }
 
@@ -249,44 +296,27 @@
       let result;
       if (definition.kind === 'terrain-dem') {
         result = await applyTerrain(rawMap, definition);
+      } else if (definition.kind === 'raster-package') {
+        result = await applyRasterPackage(rawMap, definition);
       } else {
-        try {
-          if (rawMap.getTerrain && rawMap.getTerrain()) rawMap.setTerrain(null);
-        } catch (_) {}
+        try { if (rawMap.getTerrain && rawMap.getTerrain()) rawMap.setTerrain(null); } catch (_) {}
         rawMap.setStyle(styleFor(definition));
         result = Object.assign({}, definition, { status: 'ready' });
       }
 
       state.lastResult = result;
-      try {
-        rawMap.getContainer().dataset.vietflexBasemap = definition.id;
-      } catch (_) {}
-
-      try {
-        rawMap.fire('vietflex:basemapchange', { basemap: result });
-      } catch (_) {}
-
+      try { rawMap.getContainer().dataset.vietflexBasemap = definition.id; } catch (_) {}
+      try { rawMap.fire('vietflex:basemapchange', { basemap: result }); } catch (_) {}
       return result;
     });
   }
 
   function list() {
-    return Object.keys(REGISTRY).map(function (id) {
-      return Object.assign({}, REGISTRY[id]);
-    });
+    return Object.keys(REGISTRY).map(function (id) { return Object.assign({}, REGISTRY[id]); });
   }
-
-  function get(id) {
-    return Object.assign({}, resolve(id));
-  }
-
-  function active() {
-    return get(state.active);
-  }
-
-  function status() {
-    return state.lastResult ? Object.assign({}, state.lastResult) : null;
-  }
+  function get(id) { return Object.assign({}, resolve(id)); }
+  function active() { return get(state.active); }
+  function status() { return state.lastResult ? Object.assign({}, state.lastResult) : null; }
 
   global.VietflexBasemaps = Object.freeze({
     version: VERSION,
@@ -295,6 +325,7 @@
     active: active,
     status: status,
     apply: apply,
-    terrainManifestUrl: TERRAIN_MANIFEST_URL
+    terrainManifestUrl: TERRAIN_MANIFEST_URL,
+    vietflexBasemapManifestUrl: VIETFLEX_BASEMAP_MANIFEST_URL
   });
 })(typeof window !== 'undefined' ? window : globalThis);
