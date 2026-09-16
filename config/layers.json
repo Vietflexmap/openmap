@@ -1,0 +1,63 @@
+{
+  "schema": "vietflex-layer-registry/1.0",
+  "contract": "../schema/vietflex-layer.schema.json",
+  "principles": [
+    "layer-is-not-core",
+    "registry-is-source-of-truth",
+    "adapter-is-replaceable",
+    "dataset-metadata-is-required",
+    "ui-does-not-hardcode-layers"
+  ],
+  "groups": [
+    { "id": "administrative", "name": "Hành chính", "order": 10 },
+    { "id": "hydrology", "name": "Thủy văn", "order": 20 },
+    { "id": "soil", "name": "Thổ nhưỡng", "order": 30 },
+    { "id": "crops", "name": "Cây trồng", "order": 40 }
+  ],
+  "layers": [
+    {
+      "id": "vf.administrative.boundaries",
+      "name": "Địa giới hành chính",
+      "group": "administrative",
+      "type": "vector",
+      "enabled": false,
+      "dataset_id": "ds.vn.administrative.boundaries",
+      "source": { "adapter": "pmtiles", "uri": null, "layer": "administrative" },
+      "capabilities": ["render", "toggle", "identify", "filter", "legend", "opacity", "query", "export"],
+      "metadata": { "crs": "EPSG:4326", "status": "awaiting-data" }
+    },
+    {
+      "id": "vf.hydrology.network",
+      "name": "Sông, kênh, hồ và lưu vực",
+      "group": "hydrology",
+      "type": "vector",
+      "enabled": false,
+      "dataset_id": "ds.vn.hydrology.network",
+      "source": { "adapter": "pmtiles", "uri": null, "layer": "hydrology" },
+      "capabilities": ["render", "toggle", "identify", "filter", "legend", "opacity", "query", "export"],
+      "metadata": { "crs": "EPSG:4326", "status": "awaiting-data" }
+    },
+    {
+      "id": "vf.soil.classification",
+      "name": "Thổ nhưỡng",
+      "group": "soil",
+      "type": "vector",
+      "enabled": false,
+      "dataset_id": "ds.vn.soil.classification",
+      "source": { "adapter": "pmtiles", "uri": null, "layer": "soil" },
+      "capabilities": ["render", "toggle", "identify", "filter", "legend", "opacity", "query", "export"],
+      "metadata": { "crs": "EPSG:4326", "status": "awaiting-data" }
+    },
+    {
+      "id": "vf.crops.inventory",
+      "name": "Hiện trạng cây trồng",
+      "group": "crops",
+      "type": "vector",
+      "enabled": false,
+      "dataset_id": "ds.vn.crops.inventory",
+      "source": { "adapter": "pmtiles", "uri": null, "layer": "crops" },
+      "capabilities": ["render", "toggle", "identify", "filter", "legend", "opacity", "query", "time", "export"],
+      "metadata": { "crs": "EPSG:4326", "status": "awaiting-data" }
+    }
+  ]
+}
