@@ -1,11 +1,41 @@
-# Vietflex OpenMap / Map Core
+# Vietflex OpenMap / Map Core / Platform Core
 
-`Vietflex OpenMap` là lớp API bản đồ chạy trên **MapLibre GL JS**, ưu tiên giao diện và nhãn **tiếng Việt**, không phụ thuộc Google Maps. Dự án đang được mở rộng thành **Vietflex Map Core** với ba lõi độc lập: **Basemap**, **Places** và **Road Graph**.
+`Vietflex OpenMap` là lớp API bản đồ chạy trên **MapLibre GL JS**, ưu tiên giao diện và nhãn **tiếng Việt**, không phụ thuộc Google Maps. Dự án đang được mở rộng thành **Vietflex Platform Core** để dùng chung cho WebGIS, mobile, vehicle, xADAS, IoT và GeoAI.
 
 - Vietflex OpenMap: **0.2.0**
 - Vietflex Map Core facade: **0.1.0**
+- Vietflex Platform Core: **0.3.0**
 
-## Kiến trúc mục tiêu
+## Kiến trúc tổng thể
+
+```text
+OSM / DEM / Satellite / GPS / Camera / IoT / TPMS / OBD
+                         │
+                         ↓
+                    Data Core
+                         │
+                         ↓
+                  Vietflex Schema
+                         │
+          ┌──────────────┼──────────────┐
+          ↓              ↓              ↓
+       PostGIS          COG          PMTiles
+          │              │              │
+          └──────────────┼──────────────┘
+                         ↓
+                    Spatial Core
+                         │
+                  Time/Event Core
+                         │
+           Mobility/IoT + GeoAI Core
+                         │
+                         ↓
+                   Service + SDK
+                         │
+       WebGIS / Mobile / Vehicle / xADAS / AI Agent
+```
+
+Map Core vẫn giữ ba nhánh nền:
 
 ```text
                          Vietflex Map Core
@@ -37,30 +67,172 @@ Ba nhánh phải được build từ cùng snapshot dữ liệu/version để ba
   src="https://cdn.jsdelivr.net/gh/Vietflexmap/openmap@main/dist/vietflex.js"></script>
 <script
   src="https://cdn.jsdelivr.net/gh/Vietflexmap/openmap@main/dist/vietflex-core.js"></script>
+<script
+  src="https://cdn.jsdelivr.net/gh/Vietflexmap/openmap@main/dist/vietflex-platform.js"></script>
 ```
 
 > Production nên pin URL theo release tag hoặc commit SHA thay vì `@main`.
 
-## Khởi tạo bản đồ tiếng Việt
+## Platform Core API
 
-```html
-<div id="map" style="height:600px"></div>
-<script>
-  const map = Vietflex.vietflexMap('map', {
-    basemap: 'streets',
-    language: 'vi',
-    vietnamReferenceLabels: true,
-    center: [13.8, 110.2],
-    zoom: 4.6,
-    zoomControl: false,
-    attributionControl: false
-  });
+```js
+Vietflex.Platform.Data
+Vietflex.Platform.Schema
+Vietflex.Platform.Storage
+Vietflex.Platform.Spatial
+Vietflex.Platform.TimeEvent
+Vietflex.Platform.MobilityIoT
+Vietflex.Platform.GeoAI
+Vietflex.Platform.ServiceSDK
+```
 
-  new Vietflex.ZoomControl({ position: 'topleft' }).addTo(map);
-  new Vietflex.BasemapControl({ position: 'topright' }).addTo(map);
-  new Vietflex.ScaleControl({ position: 'bottomleft' }).addTo(map);
-  new Vietflex.AttributionControl({ position: 'bottomright' }).addTo(map);
-</script>
+Ví dụ tạo feature theo Vietflex Schema:
+
+```js
+const feature = Vietflex.Platform.Schema.createFeature({
+  vf_type: 'vf_sensor',
+  source: 'tpms',
+  name_vi: 'Áp suất lốp trước trái',
+  observed_at: new Date().toISOString(),
+  properties: { pressure_kpa: 230 }
+});
+```
+
+Ví dụ normalize telemetry:
+
+```js
+const telemetry = Vietflex.Platform.MobilityIoT.normalizeTelemetry({
+  device_id: 'vehicle-01',
+  lat: 10.7769,
+  lon: 106.7009,
+  speed_kmh: 42,
+  rpm: 1800
+});
+```
+
+## Data Core
+
+Nguồn dữ liệu chuẩn gồm:
+
+- OSM
+- DEM / terrain
+- ảnh vệ tinh
+- GPS traces
+- camera / dashcam
+- IoT telemetry
+- TPMS
+- OBD/CAN
+
+Mỗi nguồn phải giữ provenance, timestamp, license, checksum và dataset version.
+
+## Vietflex Schema
+
+Namespace đề xuất:
+
+```text
+vf_base
+vf_place
+vf_road
+vf_sensor
+vf_event
+vf_media
+vf_ai
+```
+
+Quy tắc tên tiếng Việt:
+
+```text
+name:vi -> name_vi -> name -> name:latin -> name_en
+```
+
+Schema machine-readable: `schema/vietflex-feature.schema.json`.
+
+## Storage Core
+
+```text
+PostGIS       -> query động, transaction, spatial SQL
+GPKG          -> portable/offline GIS package
+COG           -> raster cloud-native, DEM, ảnh vệ tinh
+PMTiles       -> basemap/vector/raster distribution
+Object Store  -> tile, COG, media, model, build artefact
+```
+
+## Spatial Core
+
+Operation chuẩn:
+
+```text
+buffer
+intersect
+within
+nearest
+spatial-query
+routing
+geocoding
+reverse-geocoding
+map-matching
+terrain
+```
+
+Engine phía dưới được bọc bằng adapter để có thể thay PostGIS, GDAL, Valhalla, Photon hoặc service riêng mà không đổi API app.
+
+## Time/Event Core
+
+Đồng bộ theo timestamp:
+
+```text
+GPS -------┐
+Video -----┼--> Time/Event alignment --> event timeline
+TPMS ------┤
+OBD -------┤
+IMU -------┘
+```
+
+Khuyến nghị dùng ISO-8601 UTC cho timestamp chuẩn và giữ timezone/original timestamp trong metadata khi cần audit.
+
+## Mobility/IoT Core
+
+Protocol/adapter mục tiêu:
+
+```text
+BLE
+USB
+CAN
+OBD-II
+TPMS
+Serial
+Wi-Fi
+MQTT
+HTTP
+```
+
+UI/app không phụ thuộc trực tiếp từng model thiết bị; mỗi vendor/device phải normalize về telemetry Vietflex.
+
+## GeoAI Core
+
+Task interface chuẩn:
+
+```text
+image-understanding
+video-event-detection
+geo-query-generation
+feature-extraction
+QA
+anomaly-detection
+sensor-fusion
+```
+
+AI output phải giữ provenance, confidence và QA status; không nên ghi trực tiếp vào source-of-truth khi chưa qua rule/QA phù hợp.
+
+## Service + SDK Core
+
+Mọi app gọi façade Vietflex; backend được phép thay đổi độc lập.
+
+```js
+Vietflex.Platform.configure({
+  language: 'vi',
+  datasetVersion: '2026-09-16-01'
+});
 ```
 
 ## Basemap Core
@@ -88,249 +260,37 @@ Object Storage + CDN Vietflex
 MapLibre
 ```
 
-Đổi lớp nền:
+## Places + Road Graph Core
 
-```js
-map.setBasemap('dark');
-map.setBasemap('light');
-map.setBasemap('3d');
-```
+Places dùng façade `Vietflex.Core.places()`; Road Graph dùng `Vietflex.Core.routing()`. Search/routing endpoint không hard-code để production có thể self-host.
 
-## Places Core
+**Basemap road geometry không phải routing graph.** Road Graph phải giữ topology, direction, one-way, turn restriction, speed, access và conditional restriction.
 
-Adapter mặc định hiện là **Photon** nhưng endpoint không được hard-code. Production nên self-host.
+## Release Manifest
 
-Cấu hình:
+Template: `config/core-manifest.example.json`.
 
-```js
-Vietflex.Core.configure({
-  language: 'vi',
-  search: {
-    engine: 'photon',
-    endpoint: 'https://search.maps.example.vn'
-  }
-});
-```
-
-Tìm địa điểm:
-
-```js
-const places = Vietflex.Core.places();
-
-const result = await places.search('Bến Tre', {
-  limit: 10,
-  lang: 'vi'
-});
-```
-
-Reverse geocode:
-
-```js
-const result = await places.reverse([10.243, 106.375]);
-```
-
-Schema Places dài hạn nên giữ `place_id`, `name_vi`, `aliases`, category, địa chỉ, `admin_code`, tọa độ, nguồn và version.
-
-## Road Graph Core
-
-**Basemap road geometry không phải routing graph.** Road Graph phải giữ topology và luật giao thông riêng:
+Mỗi build nên quản lý độc lập:
 
 ```text
-OSM highways
-    ↓
-Nodes + Directed Edges
-    │
-    ├── one-way
-    ├── turn restrictions
-    ├── speed
-    ├── access
-    ├── road class
-    ├── bridge/tunnel
-    └── conditional restrictions
-    ↓
-Routing graph tiles
+sdk_version
+schema_version
+dataset_version
+basemap_version
+places_version
+roadgraph_version
+terrain_version
+model_version
+build_time
+source_timestamp
+license_manifest
+checksums
 ```
 
-Adapter mặc định hiện là **Valhalla**.
+## Tài liệu
 
-```js
-Vietflex.Core.configure({
-  routing: {
-    engine: 'valhalla',
-    endpoint: 'https://routing.maps.example.vn',
-    costing: 'auto'
-  }
-});
-```
-
-## Routing
-
-```js
-const routing = Vietflex.Core.routing();
-
-const route = await routing.route([
-  [10.7769, 106.7009],
-  [10.2430, 106.3750]
-]);
-```
-
-Matrix:
-
-```js
-const matrix = await routing.matrix(
-  [[10.7769, 106.7009]],
-  [[10.2430, 106.3750], [10.0452, 105.7469]]
-);
-```
-
-## Map Matching
-
-GPS thô từ điện thoại/xe/xADAS có thể được ghép vào road graph:
-
-```js
-const matched = await routing.mapMatch([
-  { lat: 10.7769, lon: 106.7009, accuracy: 8, time: 1700000000 },
-  { lat: 10.7771, lon: 106.7014, accuracy: 7, time: 1700000001 }
-]);
-```
-
-Luồng chuẩn:
-
-```text
-Phone / Vehicle / xADAS
-        ↓
-      GPS
-        ↓
- trace buffer
-        ↓
-   Map Matching
-        ↓
- current road edge
-        ↓
- road attributes / navigation context
-```
-
-## ETA
-
-```js
-const eta = await routing.eta(
-  [10.7769, 106.7009],
-  [10.2430, 106.3750]
-);
-
-console.log(eta.seconds, eta.distance);
-```
-
-Roadmap ETA:
-
-```text
-static graph speed
-      ↓
-historical speed profile
-      ↓
-live probe speed + incidents
-      ↓
-dynamic ETA
-```
-
-AI có thể dự đoán tốc độ/ETA nhưng topology, access và turn restrictions vẫn nên là deterministic rules.
-
-## Navigation / GPS session
-
-`NavigationSession` hiện tạo nền cho pipeline GPS → trace → map matching:
-
-```js
-const nav = Vietflex.Core.navigation();
-
-nav.on('gps', point => {
-  console.log('GPS', point);
-});
-
-nav.on('match', result => {
-  console.log('Matched road', result);
-});
-
-nav.on('error', console.error);
-nav.start();
-
-// nav.stop();
-```
-
-Module tiếp theo sẽ bổ sung route progress, off-route detection, rerouting, maneuver state và Vietnamese TTS hooks.
-
-## xADAS integration
-
-```text
-Camera ──→ AI perception ──────────────┐
-                                       │
-GPS ─────→ Map Matching ─→ road edge ──┼──→ Fusion
-                                       │
-Road Graph → curve/speed/junction ─────┘
-                                       ↓
-                              HUD / Warning / Context
-```
-
-Camera nhận biết tình trạng tức thời; map cung cấp topology và ngữ cảnh phía trước; GPS + map matching nối chiếc xe với road graph.
-
-## Chính sách nhãn tiếng Việt
-
-Khi `language: 'vi'`, Vietflex ưu tiên:
-
-```text
-name:vi
-  ↓
-name_vi
-  ↓
-name
-  ↓
-name:latin
-  ↓
-name_en / name:en
-```
-
-Lớp `data/vietnam-reference-labels.geojson` có neo nhãn cartographic tiếng Việt cho `Biển Đông`, `Quần đảo Hoàng Sa`, `Quần đảo Trường Sa`. Đây là neo nhãn hiển thị, không phải polygon hay đường biên pháp lý; metadata giữ trạng thái tranh chấp tách khỏi chính sách trình bày.
-
-## Nguyên tắc chống lock-in
-
-Ứng dụng chỉ gọi:
-
-```text
-Vietflex.vietflexMap()
-Vietflex.Core.places()
-Vietflex.Core.routing()
-Vietflex.Core.navigation()
-```
-
-Ứng dụng **không gọi trực tiếp URL Photon/Valhalla**. Engine và endpoint được đặt trong cấu hình Core. Vì vậy có thể thay Photon, Valhalla hoặc storage/CDN mà không phải viết lại app.
-
-## Cấu trúc production mục tiêu
-
-```text
-                    VIETFLEX DATA PIPELINE
-                             │
-                  OSM PBF + own data
-                             │
-        ┌────────────────────┼────────────────────┐
-        ↓                    ↓                    ↓
-   Basemap build        Places build         Graph build
-        ↓                    ↓                    ↓
-    PMTiles              Search index        Routing graph
-        ↓                    ↓                    ↓
- CDN/Object Store       Search Service      Routing Service
-        │                    │                    │
-        └────────────────────┼────────────────────┘
-                             ↓
-                      Vietflex Core API
-                             ↓
-             Web / Mobile / Vehicle / xADAS
-```
-
-Xem chi tiết:
-
-- `docs/VIETNAMESE_BASEMAP_ARCHITECTURE.md`
 - `docs/MAP-CORE-ARCHITECTURE.md`
-- `config/core.example.js`
+- `docs/VIETNAMESE_BASEMAP_ARCHITECTURE.md`
+- `docs/VIETFLEX-PLATFORM-CORE.md`
 
-## Nguồn và giấy phép
-
-Vietflex OpenMap/Map Core là lớp tích hợp/API. Khi triển khai production cần giữ attribution và tuân thủ giấy phép/điều khoản của từng nguồn dữ liệu, tile, font, style và engine. Public demo services không được coi là hạ tầng production mặc định.
+Nguyên tắc dài hạn: **dữ liệu nguồn, schema, storage, service, SDK và UI phải tách lớp**. Không để ứng dụng phụ thuộc trực tiếp endpoint, vendor thiết bị, engine routing hay model AI cụ thể.
