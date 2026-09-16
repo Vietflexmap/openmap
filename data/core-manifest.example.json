@@ -1,0 +1,42 @@
+{
+  "core": "vietflex-map-core",
+  "schema_version": "0.1.0",
+  "dataset_version": "2026.09.16-vn-demo",
+  "region": "VN",
+  "language_priority": ["vi", "name", "en"],
+  "source_snapshot": {
+    "osm_pbf": "vietnam-latest.osm.pbf",
+    "osm_timestamp": "REPLACE_WITH_SOURCE_TIMESTAMP",
+    "natural_earth_version": "REPLACE_WITH_VERSION",
+    "dem": "REPLACE_WITH_DATASET_AND_VERSION"
+  },
+  "artifacts": {
+    "basemap": {
+      "format": "pmtiles",
+      "schema": "shortbread-or-vietflex",
+      "url": "https://maps.example.vn/data/vietnam.pmtiles",
+      "checksum_sha256": "REPLACE_WITH_SHA256"
+    },
+    "places": {
+      "engine": "photon",
+      "index_version": "REPLACE_WITH_INDEX_VERSION",
+      "endpoint": "https://search.maps.example.vn",
+      "checksum_sha256": "REPLACE_WITH_SHA256"
+    },
+    "road_graph": {
+      "engine": "valhalla",
+      "graph_version": "REPLACE_WITH_GRAPH_VERSION",
+      "endpoint": "https://routing.maps.example.vn",
+      "checksum_sha256": "REPLACE_WITH_SHA256"
+    }
+  },
+  "build": {
+    "built_at": "REPLACE_WITH_ISO8601",
+    "pipeline_commit": "REPLACE_WITH_GIT_SHA",
+    "qa_status": "pending"
+  },
+  "license_manifest": [
+    "OpenStreetMap/ODbL and required attribution",
+    "Add licenses for all other bundled sources"
+  ]
+}
