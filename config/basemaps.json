@@ -1,0 +1,47 @@
+{
+  "schema": "vietflex-basemaps/0.1",
+  "default": "simple",
+  "architecture": "plugin-adapter",
+  "basemaps": [
+    {
+      "id": "simple",
+      "name": "Vietflex Simple",
+      "kind": "vector-style",
+      "provider": "OpenFreeMap",
+      "source": "https://tiles.openfreemap.org/styles/positron",
+      "capabilities": ["vector", "labels", "lightweight"]
+    },
+    {
+      "id": "dark",
+      "name": "Vietflex Dark",
+      "kind": "vector-style",
+      "provider": "OpenFreeMap",
+      "source": "https://tiles.openfreemap.org/styles/dark",
+      "capabilities": ["vector", "labels", "dark"]
+    },
+    {
+      "id": "terrain",
+      "name": "Vietflex Terrain / Topo",
+      "kind": "raster-xyz",
+      "provider": "OpenTopoMap",
+      "license": "CC-BY-SA",
+      "source": "https://{a|b|c}.tile.opentopomap.org/{z}/{x}/{y}.png",
+      "capabilities": ["raster", "topographic", "terrain-reference"]
+    },
+    {
+      "id": "satellite",
+      "name": "Vietflex Satellite",
+      "kind": "raster-xyz",
+      "provider": "Esri World Imagery",
+      "source": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      "capabilities": ["raster", "satellite", "imagery"],
+      "replaceable_adapter": true
+    }
+  ],
+  "principles": [
+    "basemap-is-not-core",
+    "provider-is-replaceable",
+    "ui-reads-registry",
+    "attribution-is-provider-aware"
+  ]
+}
