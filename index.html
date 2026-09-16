@@ -34,9 +34,31 @@
     .pill { padding:3px 6px; border-radius:999px; background:#f1f3f5; }
     .pill.active { background:#e7f6ec; }
     .hint { margin-top:8px; color:#66717d; }
+
+    /* Branding hiển thị chính. Attribution nguồn dữ liệu vẫn nằm trong nút info compact. */
+    .vf-map-credit {
+      position: absolute;
+      right: 36px;
+      bottom: 4px;
+      z-index: 6;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 7px;
+      border-radius: 5px;
+      background: rgba(255,255,255,.92);
+      box-shadow: 0 1px 4px rgba(0,0,0,.12);
+      color: #26313b;
+      font: 11px/1.2 system-ui, sans-serif;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .vf-map-credit .flag { font-size: 14px; line-height: 1; }
+
     @media (max-width: 700px) {
       .core-body { display:none; }
       .core-panel { width:auto; right:12px; }
+      .vf-map-credit { right: 34px; bottom: 4px; }
     }
   </style>
 </head>
@@ -73,6 +95,11 @@ Event Core ──┘        │
     </div>
   </section>
 
+  <div class="vf-map-credit" aria-label="Vietflex OpenMap">
+    <span class="flag" aria-hidden="true">🇻🇳</span>
+    <span>© Vietflex | OpenMap</span>
+  </div>
+
   <script>
     const map = Vietflex.vietflexMap('map', {
       basemap: 'streets',
@@ -87,9 +114,12 @@ Event Core ──┘        │
     new Vietflex.ZoomControl({ position: 'topleft' }).addTo(map);
     new Vietflex.BasemapControl({ position: 'topright' }).addTo(map);
     new Vietflex.ScaleControl({ position: 'bottomleft' }).addTo(map);
+
+    // Nguồn dữ liệu vẫn được giữ trong attribution compact để tuân thủ giấy phép.
     new Vietflex.AttributionControl({
       position: 'bottomright',
-      customAttribution: 'Vietflex Core Tech · MapLibre · OpenStreetMap/OpenFreeMap'
+      compact: true,
+      customAttribution: '🇻🇳 © Vietflex | OpenMap'
     }).addTo(map);
 
     // Giữ duy nhất nhãn Biển Đông do lớp tham chiếu Vietflex quản lý.
