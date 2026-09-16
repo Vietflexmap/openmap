@@ -1,5 +1,5 @@
 {
-  "schema": "vietflex-basemaps/0.2",
+  "schema": "vietflex-basemaps/0.3",
   "default": "simple",
   "architecture": "plugin-adapter",
   "basemaps": [
@@ -38,6 +38,16 @@
       "source": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
       "capabilities": ["raster", "satellite", "imagery"],
       "replaceable_adapter": true
+    },
+    {
+      "id": "vietflex",
+      "name": "Vietflex Basemap",
+      "kind": "raster-package",
+      "provider": "Vietflex self-hosted raster",
+      "manifest": "./basemaps/vietflex/manifest.json",
+      "capabilities": ["raster", "administrative", "offline-ready", "self-hosted"],
+      "fallback": "simple",
+      "replaceable_adapter": true
     }
   ],
   "principles": [
@@ -46,6 +56,8 @@
     "ui-reads-registry",
     "attribution-is-provider-aware",
     "terrain-data-is-self-managed",
-    "terrain-falls-back-without-breaking-map"
+    "terrain-falls-back-without-breaking-map",
+    "raster-package-is-self-hosted",
+    "binary-map-assets-live-outside-core"
   ]
 }
