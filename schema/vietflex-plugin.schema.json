@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vietflexmap.github.io/openmap/schema/vietflex-plugin.schema.json",
+  "title": "Vietflex Plugin Manifest",
+  "type": "object",
+  "required": ["id", "version"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]+$" },
+    "name_vi": { "type": ["string", "null"] },
+    "version": { "type": "string" },
+    "requires": { "type": "object" },
+    "schemas": { "type": "array" },
+    "layers": { "type": "array" },
+    "capabilities": { "type": "array" },
+    "adapters": { "type": "array" },
+    "gateways": { "type": "array" },
+    "metadata": { "type": "object" }
+  },
+  "additionalProperties": true
+}
