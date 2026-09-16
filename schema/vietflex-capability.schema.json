@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vietflexmap.github.io/openmap/schema/vietflex-capability.schema.json",
+  "title": "Vietflex Capability",
+  "type": "object",
+  "required": ["id", "version", "category", "permission"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]+$" },
+    "version": { "type": "string" },
+    "category": { "type": "string" },
+    "permission": { "enum": ["read", "analyze", "write", "control"] },
+    "description_vi": { "type": ["string", "null"] },
+    "provider": { "type": ["string", "null"] },
+    "inputSchema": { "type": ["string", "object", "null"] },
+    "outputSchema": { "type": ["string", "object", "null"] },
+    "metadata": { "type": "object" }
+  },
+  "additionalProperties": true
+}
