@@ -5,15 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Vietflex OpenMap</title>
 
-  <link rel="stylesheet" href="./dist/vietflex.css?v=20260916-0820">
-  <script src="./dist/vietflex.js?v=20260916-0820"></script>
-  <script src="./dist/vietflex-core.js?v=20260916-0820"></script>
-  <script src="./dist/vietflex-platform.js?v=20260916-0820"></script>
+  <link rel="stylesheet" href="./dist/vietflex.css?v=20260916-0835">
+  <script src="./dist/vietflex.js?v=20260916-0835"></script>
+  <script src="./dist/vietflex-core.js?v=20260916-0835"></script>
+  <script src="./dist/vietflex-platform.js?v=20260916-0835"></script>
 
   <style>
-    html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; }
-    #map { width: 100%; height: 100%; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
 
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Branding Vietflex độc lập với attribution của dữ liệu nền. */
     .vf-map-credit {
       position: absolute;
       right: 42px;
@@ -21,40 +30,67 @@
       z-index: 999;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      padding: 4px 8px;
-      border-radius: 6px;
-      background: rgba(255,255,255,.96);
-      box-shadow: 0 1px 5px rgba(0,0,0,.18);
-      color: #17212b;
-      font: 600 11px/1.2 system-ui, sans-serif;
+      gap: 7px;
+      padding: 5px 10px;
+      border: 1px solid rgba(21, 101, 192, .14);
+      border-radius: 7px;
+      background: rgba(255, 255, 255, .97);
+      box-shadow: 0 1px 5px rgba(0, 0, 0, .16);
+      color: #1565c0;
+      font: 700 12px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       white-space: nowrap;
       text-decoration: none;
       cursor: pointer;
     }
 
     .vf-map-credit:hover {
+      color: #0d47a1;
       background: #fff;
-      text-decoration: underline;
+      box-shadow: 0 2px 7px rgba(0, 0, 0, .2);
     }
 
     .vf-map-credit:focus-visible {
-      outline: 2px solid #17212b;
+      outline: 2px solid #1565c0;
       outline-offset: 2px;
     }
 
-    .vf-map-credit .flag {
-      font-size: 15px;
-      line-height: 1;
+    .vf-flag {
+      width: 20px;
+      height: 14px;
+      display: inline-flex;
+      overflow: hidden;
+      border-radius: 2px;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, .08);
+      flex: 0 0 auto;
     }
 
+    .vf-flag svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Attribution nguồn dữ liệu chỉ hiện sau nút info compact. */
     .maplibregl-ctrl-attrib.maplibregl-compact {
       min-width: 28px;
       min-height: 28px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.96);
+    }
+
+    .maplibregl-ctrl-attrib.maplibregl-compact:not(.maplibregl-compact-show) .maplibregl-ctrl-attrib-inner {
+      display: none !important;
+    }
+
+    .maplibregl-ctrl-attrib.maplibregl-compact .maplibregl-ctrl-attrib-button {
+      display: block !important;
     }
 
     @media (max-width: 700px) {
-      .vf-map-credit { right: 40px; bottom: 5px; }
+      .vf-map-credit {
+        right: 40px;
+        bottom: 5px;
+      }
     }
   </style>
 </head>
@@ -68,8 +104,15 @@
     rel="noopener noreferrer"
     aria-label="Vietflex OpenMap trên GitHub"
     title="Vietflex OpenMap trên GitHub">
-    <span class="flag" aria-hidden="true">🇻🇳</span>
-    <span>© Vietflex | OpenMap</span>
+    <span class="vf-flag" aria-hidden="true">
+      <svg viewBox="0 0 30 20" xmlns="http://www.w3.org/2000/svg">
+        <rect width="30" height="20" fill="#da251d"/>
+        <polygon
+          fill="#ffde00"
+          points="15,3.1 16.75,8.45 22.38,8.45 17.82,11.76 19.56,17.1 15,13.8 10.44,17.1 12.18,11.76 7.62,8.45 13.25,8.45"/>
+      </svg>
+    </span>
+    <span>Vietflex | OpenMap</span>
   </a>
 
   <script>
@@ -87,13 +130,13 @@
     new Vietflex.BasemapControl({ position: 'topright' }).addTo(map);
     new Vietflex.ScaleControl({ position: 'bottomleft' }).addTo(map);
 
-    // Attribution nguồn dữ liệu vẫn được giữ trong nút info compact.
+    // Nguồn OpenStreetMap/OpenMapTiles/OpenFreeMap vẫn có thể xem qua nút info,
+    // nhưng không hiển thị chuỗi dài thường trực trên giao diện.
     new Vietflex.AttributionControl({
       position: 'bottomright',
       compact: true
     }).addTo(map);
 
-    // Giữ duy nhất nhãn Biển Đông do lớp tham chiếu Vietflex quản lý.
     function suppressDuplicateBienDong(rawMap) {
       const style = rawMap.getStyle();
       if (!style || !Array.isArray(style.layers)) return;
@@ -133,7 +176,7 @@
       if (rawMap.isStyleLoaded()) apply();
     });
 
-    // Core Tech vẫn được nạp làm nền kỹ thuật, nhưng không hiển thị bảng kiến trúc trên UI.
+    // Core Tech vẫn được nạp làm nền kỹ thuật, nhưng không hiển thị kiến trúc trên UI.
     if (Vietflex.CoreTech) {
       Vietflex.CoreTech.configure({ language: 'vi', datasetVersion: 'dev' });
       Vietflex.CoreTech.Adapters.register('maplibre', {}, {
