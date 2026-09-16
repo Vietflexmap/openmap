@@ -1,5 +1,5 @@
 {
-  "schema": "vietflex-basemaps/0.1",
+  "schema": "vietflex-basemaps/0.2",
   "default": "simple",
   "architecture": "plugin-adapter",
   "basemaps": [
@@ -22,11 +22,13 @@
     {
       "id": "terrain",
       "name": "Vietflex Terrain / Topo",
-      "kind": "raster-xyz",
-      "provider": "OpenTopoMap",
-      "license": "CC-BY-SA",
-      "source": "https://{a|b|c}.tile.opentopomap.org/{z}/{x}/{y}.png",
-      "capabilities": ["raster", "topographic", "terrain-reference"]
+      "kind": "terrain-dem",
+      "provider": "Vietflex DEM",
+      "manifest": "./terrain/manifest.json",
+      "base_style": "https://tiles.openfreemap.org/styles/positron",
+      "capabilities": ["raster-dem", "hillshade", "terrain-3d", "topographic", "self-hosted"],
+      "fallback": "simple",
+      "replaceable_adapter": true
     },
     {
       "id": "satellite",
@@ -42,6 +44,8 @@
     "basemap-is-not-core",
     "provider-is-replaceable",
     "ui-reads-registry",
-    "attribution-is-provider-aware"
+    "attribution-is-provider-aware",
+    "terrain-data-is-self-managed",
+    "terrain-falls-back-without-breaking-map"
   ]
 }
