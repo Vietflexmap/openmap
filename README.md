@@ -1,296 +1,226 @@
-# Vietflex OpenMap / Map Core / Platform Core
+# VIETFLEX CORE TECH
 
-`Vietflex OpenMap` là lớp API bản đồ chạy trên **MapLibre GL JS**, ưu tiên giao diện và nhãn **tiếng Việt**, không phụ thuộc Google Maps. Dự án đang được mở rộng thành **Vietflex Platform Core** để dùng chung cho WebGIS, mobile, vehicle, xADAS, IoT và GeoAI.
+`https://vietflexmap.github.io/openmap/` được chốt là **lõi công nghệ nền dùng chung** của Vietflex, không phải một WebGIS sản phẩm và không phải một backend duy nhất.
 
-- Vietflex OpenMap: **0.2.0**
-- Vietflex Map Core facade: **0.1.0**
-- Vietflex Platform Core: **0.3.0**
+Mục tiêu: giữ ổn định **Schema + Capability + Event + Domain Contract**, còn renderer, storage, routing, search, MQTT, AI, API hay MCP đều đi qua adapter/gateway để có thể thay thế hoặc mở rộng mà không phá ứng dụng phía trên.
 
-## Kiến trúc tổng thể
+- Vietflex OpenMap renderer layer: `0.2.x`
+- Vietflex Map Core facade: `0.1.x`
+- **Vietflex Core Tech: `0.4.0`**
+- Kiến trúc: **Ports & Adapters / Hexagonal Architecture**
 
-```text
-OSM / DEM / Satellite / GPS / Camera / IoT / TPMS / OBD
-                         │
-                         ↓
-                    Data Core
-                         │
-                         ↓
-                  Vietflex Schema
-                         │
-          ┌──────────────┼──────────────┐
-          ↓              ↓              ↓
-       PostGIS          COG          PMTiles
-          │              │              │
-          └──────────────┼──────────────┘
-                         ↓
-                    Spatial Core
-                         │
-                  Time/Event Core
-                         │
-           Mobility/IoT + GeoAI Core
-                         │
-                         ↓
-                   Service + SDK
-                         │
-       WebGIS / Mobile / Vehicle / xADAS / AI Agent
-```
-
-Map Core vẫn giữ ba nhánh nền:
+## Kiến trúc chính thức
 
 ```text
-                         Vietflex Map Core
-                                │
-             ┌──────────────────┼──────────────────┐
-             ↓                  ↓                  ↓
-          Basemap            Places           Road Graph
-          PMTiles              POI                 │
-             │                  │                  ↓
-          MapLibre           Search          Routing Engine
-                                                   │
-                                      ┌────────────┼────────────┐
-                                      ↓            ↓            ↓
-                                 Map Matching     ETA       Navigation
-                                      ↑
-                                  GPS traces
-                                      ↑
-                           Phone / Vehicle / xADAS
+                           VIETFLEX CORE TECH
+                                  │
+                ┌─────────────────┼─────────────────┐
+                ↓                 ↓                 ↓
+            Schema Core      Capability Core    Event Core
+                │                 │                 │
+                └─────────────────┼─────────────────┘
+                                  ↓
+                            Domain Services
+                                  │
+              ┌───────────────────┼────────────────────┐
+              ↓                   ↓                    ↓
+          Data Core          Spatial Core          Temporal Core
+              │                   │                    │
+              └───────────────────┼────────────────────┘
+                                  ↓
+                             Adapter Layer
+                                  │
+ ┌────────┬─────────┬────────┬────┼────┬────────┬─────────┐
+ ↓        ↓         ↓        ↓         ↓        ↓         ↓
+PostGIS PMTiles    COG    Valhalla   Photon   MQTT     GeoAI
+                                  │
+                                  ↓
+                             PORT / GATEWAYS
+                                  │
+              ┌──────────┬────────┼─────────┐
+              ↓          ↓        ↓         ↓
+             CDN        API      MCP      Events
+              │          │        │         │
+              └──────────┴────────┼─────────┘
+                                  ↓
+                            SDK / Plugins
+                                  ↓
+       WebGIS / Mobile / Vehicle / Robot / xADAS / AI Agent
 ```
 
-Ba nhánh phải được build từ cùng snapshot dữ liệu/version để basemap, search và routing không lệch nhau.
+## Public Core API
+
+```js
+Vietflex.CoreTech.Schema
+Vietflex.CoreTech.Capability
+Vietflex.CoreTech.Event
+Vietflex.CoreTech.Domain
+Vietflex.CoreTech.Data
+Vietflex.CoreTech.Spatial
+Vietflex.CoreTech.Temporal
+Vietflex.CoreTech.Adapters
+Vietflex.CoreTech.Gateways
+Vietflex.CoreTech.SDK
+Vietflex.CoreTech.Plugins
+```
+
+`Vietflex.Platform` vẫn là alias tương thích cho code v0.3.x.
+
+## Capability-first
+
+SDK, API, MCP, CLI và Agent không tự viết logic GIS riêng. Tất cả gọi cùng capability registry.
+
+```js
+Vietflex.CoreTech.Capability.register({
+  id: 'spatial.buffer',
+  version: '1.0.0',
+  category: 'spatial',
+  permission: 'analyze',
+  provider: 'postgis'
+}, {
+  async execute(payload) {
+    // Adapter implementation lives outside the stable domain contract.
+  }
+});
+```
+
+Sau đó:
+
+```js
+await Vietflex.CoreTech.Spatial.run('buffer', payload);
+```
+
+API hay MCP chỉ expose lại `spatial.buffer`; chúng không được query PostGIS trực tiếp.
+
+## Schema Core
+
+Namespace chuẩn:
+
+```text
+vf.feature
+vf.place
+vf.road
+vf.track
+vf.sensor
+vf.device
+vf.event
+vf.media
+vf.raster
+vf.terrain
+vf.ai_result
+vf.route
+```
+
+Schema machine-readable:
+
+- `schema/vietflex-feature.schema.json`
+- `schema/vietflex-capability.schema.json`
+- `schema/vietflex-plugin.schema.json`
+
+## Adapter Layer
+
+Công nghệ cụ thể nằm ngoài domain core:
+
+```text
+PostGIS / GPKG
+PMTiles / COG / Object Storage
+MapLibre
+Valhalla
+Photon
+MQTT / Device Drivers
+GeoAI models/services
+```
+
+Có thể thay adapter mà không đổi API ứng dụng.
+
+## Gateways
+
+Bốn port chính:
+
+```text
+CDN     -> static SDK/schema/style/plugin/manifest
+API     -> HTTP service gateway
+MCP     -> AI/Agent gateway
+Events  -> WebSocket/MQTT/SSE realtime gateway
+```
+
+Hiện tại GitHub Pages đang là **CDN/reference port**. API, MCP và Events được thiết kế để triển khai thành service riêng về sau.
+
+System manifest:
+
+```text
+https://vietflexmap.github.io/openmap/manifest.json
+```
+
+## Plugin Contract
+
+Layer/chức năng chuyên đề không sửa core. Tạo plugin riêng:
+
+```text
+plugins/flood
+plugins/planning
+plugins/traffic
+plugins/aquaculture
+plugins/adas
+```
+
+Plugin khai báo:
+
+```text
+schemas
+layers
+capabilities
+adapters
+gateways
+requires
+version
+```
+
+Ví dụ runtime:
+
+```js
+Vietflex.CoreTech.Plugins.install(manifest, plugin);
+```
 
 ## CDN
 
 ```html
 <link rel="stylesheet"
   href="https://cdn.jsdelivr.net/gh/Vietflexmap/openmap@main/dist/vietflex.css">
-<script
-  src="https://cdn.jsdelivr.net/gh/Vietflexmap/openmap@main/dist/vietflex.js"></script>
-<script
-  src="https://cdn.jsdelivr.net/gh/Vietflexmap/openmap@main/dist/vietflex-core.js"></script>
-<script
-  src="https://cdn.jsdelivr.net/gh/Vietflexmap/openmap@main/dist/vietflex-platform.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/Vietflexmap/openmap@main/dist/vietflex.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/Vietflexmap/openmap@main/dist/vietflex-core.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/Vietflexmap/openmap@main/dist/vietflex-platform.js"></script>
 ```
 
-> Production nên pin URL theo release tag hoặc commit SHA thay vì `@main`.
+Production nên pin release tag hoặc commit SHA thay vì `@main`.
 
-## Platform Core API
+## Vai trò GitHub Pages
 
-```js
-Vietflex.Platform.Data
-Vietflex.Platform.Schema
-Vietflex.Platform.Storage
-Vietflex.Platform.Spatial
-Vietflex.Platform.TimeEvent
-Vietflex.Platform.MobilityIoT
-Vietflex.Platform.GeoAI
-Vietflex.Platform.ServiceSDK
-```
+`https://vietflexmap.github.io/openmap/` là:
 
-Ví dụ tạo feature theo Vietflex Schema:
+- reference implementation;
+- static distribution/CDN;
+- schema/manifest/docs endpoint;
+- MapLibre demo renderer;
+- nơi công bố stable core contract.
 
-```js
-const feature = Vietflex.Platform.Schema.createFeature({
-  vf_type: 'vf_sensor',
-  source: 'tpms',
-  name_vi: 'Áp suất lốp trước trái',
-  observed_at: new Date().toISOString(),
-  properties: { pressure_kpa: 230 }
-});
-```
+Nó không phải production PostGIS, routing, search, MQTT, MCP hay AI server.
 
-Ví dụ normalize telemetry:
+## Nguyên tắc bắt buộc
 
-```js
-const telemetry = Vietflex.Platform.MobilityIoT.normalizeTelemetry({
-  device_id: 'vehicle-01',
-  lat: 10.7769,
-  lon: 106.7009,
-  speed_kmh: 42,
-  rpm: 1800
-});
-```
-
-## Data Core
-
-Nguồn dữ liệu chuẩn gồm:
-
-- OSM
-- DEM / terrain
-- ảnh vệ tinh
-- GPS traces
-- camera / dashcam
-- IoT telemetry
-- TPMS
-- OBD/CAN
-
-Mỗi nguồn phải giữ provenance, timestamp, license, checksum và dataset version.
-
-## Vietflex Schema
-
-Namespace đề xuất:
-
-```text
-vf_base
-vf_place
-vf_road
-vf_sensor
-vf_event
-vf_media
-vf_ai
-```
-
-Quy tắc tên tiếng Việt:
-
-```text
-name:vi -> name_vi -> name -> name:latin -> name_en
-```
-
-Schema machine-readable: `schema/vietflex-feature.schema.json`.
-
-## Storage Core
-
-```text
-PostGIS       -> query động, transaction, spatial SQL
-GPKG          -> portable/offline GIS package
-COG           -> raster cloud-native, DEM, ảnh vệ tinh
-PMTiles       -> basemap/vector/raster distribution
-Object Store  -> tile, COG, media, model, build artefact
-```
-
-## Spatial Core
-
-Operation chuẩn:
-
-```text
-buffer
-intersect
-within
-nearest
-spatial-query
-routing
-geocoding
-reverse-geocoding
-map-matching
-terrain
-```
-
-Engine phía dưới được bọc bằng adapter để có thể thay PostGIS, GDAL, Valhalla, Photon hoặc service riêng mà không đổi API app.
-
-## Time/Event Core
-
-Đồng bộ theo timestamp:
-
-```text
-GPS -------┐
-Video -----┼--> Time/Event alignment --> event timeline
-TPMS ------┤
-OBD -------┤
-IMU -------┘
-```
-
-Khuyến nghị dùng ISO-8601 UTC cho timestamp chuẩn và giữ timezone/original timestamp trong metadata khi cần audit.
-
-## Mobility/IoT Core
-
-Protocol/adapter mục tiêu:
-
-```text
-BLE
-USB
-CAN
-OBD-II
-TPMS
-Serial
-Wi-Fi
-MQTT
-HTTP
-```
-
-UI/app không phụ thuộc trực tiếp từng model thiết bị; mỗi vendor/device phải normalize về telemetry Vietflex.
-
-## GeoAI Core
-
-Task interface chuẩn:
-
-```text
-image-understanding
-video-event-detection
-geo-query-generation
-feature-extraction
-QA
-anomaly-detection
-sensor-fusion
-```
-
-AI output phải giữ provenance, confidence và QA status; không nên ghi trực tiếp vào source-of-truth khi chưa qua rule/QA phù hợp.
-
-## Service + SDK Core
-
-Mọi app gọi façade Vietflex; backend được phép thay đổi độc lập.
-
-```js
-Vietflex.Platform.configure({
-  language: 'vi',
-  datasetVersion: '2026-09-16-01'
-});
-```
-
-## Basemap Core
-
-| ID | Tên hiển thị | Style bootstrap |
-|---|---|---|
-| `streets` | Đường phố | OpenFreeMap Liberty |
-| `light` | Nền sáng | OpenFreeMap Positron |
-| `bright` | Sáng rõ | OpenFreeMap Bright |
-| `dark` | Nền tối | OpenFreeMap Dark |
-| `fiord` | Địa hình tối | OpenFreeMap Fiord |
-| `3d` | Bản đồ 3D | OpenFreeMap 3D |
-
-Các style OpenFreeMap chỉ là **bootstrap source** để chạy ngay. Production mục tiêu là:
-
-```text
-OSM PBF + Natural Earth + DEM
-        ↓
-Basemap ETL
-        ↓
-PMTiles / MVT / COG
-        ↓
-Object Storage + CDN Vietflex
-        ↓
-MapLibre
-```
-
-## Places + Road Graph Core
-
-Places dùng façade `Vietflex.Core.places()`; Road Graph dùng `Vietflex.Core.routing()`. Search/routing endpoint không hard-code để production có thể self-host.
-
-**Basemap road geometry không phải routing graph.** Road Graph phải giữ topology, direction, one-way, turn restriction, speed, access và conditional restriction.
-
-## Release Manifest
-
-Template: `config/core-manifest.example.json`.
-
-Mỗi build nên quản lý độc lập:
-
-```text
-sdk_version
-schema_version
-dataset_version
-basemap_version
-places_version
-roadgraph_version
-terrain_version
-model_version
-build_time
-source_timestamp
-license_manifest
-checksums
-```
+1. Core không phụ thuộc vendor cụ thể.
+2. App không gọi adapter/backend trực tiếp nếu capability đã tồn tại.
+3. Plugin không sửa internal state của core.
+4. API/MCP/Events là gateway, không chứa business logic lõi.
+5. Dữ liệu phải có schema/version/provenance/quality rõ ràng.
+6. `core_api_version`, `schema_version`, `dataset_version`, `plugin_version`, `adapter_version`, `model_version` phải tách độc lập.
+7. Business logic của xADAS, quy hoạch, cứu hộ, thủy sản, du lịch... nằm ngoài core.
 
 ## Tài liệu
 
-- `docs/MAP-CORE-ARCHITECTURE.md`
-- `docs/VIETNAMESE_BASEMAP_ARCHITECTURE.md`
-- `docs/VIETFLEX-PLATFORM-CORE.md`
+- `docs/CORE-TECH-ARCHITECTURE.md` — kiến trúc chính thức.
+- `docs/MAP-CORE-ARCHITECTURE.md` — Basemap / Places / Road Graph.
+- `docs/VIETNAMESE_BASEMAP_ARCHITECTURE.md` — nền bản đồ ưu tiên tiếng Việt.
+- `docs/VIETFLEX-PLATFORM-CORE.md` — lịch sử thiết kế platform core.
 
-Nguyên tắc dài hạn: **dữ liệu nguồn, schema, storage, service, SDK và UI phải tách lớp**. Không để ứng dụng phụ thuộc trực tiếp endpoint, vendor thiết bị, engine routing hay model AI cụ thể.
+**Giá trị lõi cần giữ ổn định lâu dài: Vietflex Schema + Capability Contract + Event Contract + Plugin Contract + Ports/Adapters.**
