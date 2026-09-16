@@ -1,0 +1,22 @@
+{
+  "schema": "vietflex-raster-basemap/1.0",
+  "id": "vietflex-basemap",
+  "name": "Vietflex Basemap",
+  "status": "awaiting-data",
+  "data_ready": false,
+  "storage": "xyz",
+  "tile_template": "./tiles/{z}/{x}/{y}.png",
+  "tile_size": 256,
+  "minzoom": 3,
+  "maxzoom": 12,
+  "bounds": [91.93, -2.02, 126.04, 26.04],
+  "dataset_version": "tiles-rar-20260916",
+  "capabilities": ["raster", "administrative", "offline-ready", "self-hosted"],
+  "attribution": "Vietflex Basemap · nguồn dữ liệu gốc và quyền tái phân phối cần được xác minh trước khi phát hành chính thức",
+  "source_package": "tiles.rar",
+  "notes": [
+    "Expected XYZ layout: tiles/{z}/{x}/{y}.png",
+    "Set data_ready=true and status=ready only after tiles are published to the declared path or a CDN URL.",
+    "For production distribution prefer PMTiles/object storage over committing hundreds of thousands of PNG files to GitHub."
+  ]
+}
