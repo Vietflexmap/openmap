@@ -1,12 +1,15 @@
-/* Vietflex GIS Layer Platform v1.0.0
+/* Vietflex GIS Layer Platform v1.1.0
  * Extension for VIETFLEX CORE TECH. Keeps thematic layers outside the domain core.
  * Contract -> Registry + State + Catalog -> Adapter boundary -> Capability bridge.
  */
 (function (global) {
   'use strict';
 
-  const VERSION = '1.0.0';
+  const VERSION = '1.1.0';
   const CONTRACT = 'vietflex-layer/1.0';
+  const CONTRACT_URL = './schema/vietflex-layer.schema.json';
+  const DEFAULT_LAYER_CONFIG = './config/layers.json';
+  const DEFAULT_CATALOG = './catalog/datasets.json';
   const VALID_TYPES = new Set(['vector', 'raster', 'live']);
   const VALID_CAPABILITIES = new Set(['render','toggle','identify','filter','legend','opacity','query','time','export']);
   const DEFAULT_STATE = Object.freeze({ visible: false, opacity: 1, filter: null, time: null, selected_feature: null });
@@ -67,7 +70,8 @@
     set(id, patch) {
       if (!this.items.has(id)) this.init(id, {});
       const next = Object.assign({}, this.items.get(id), clone(patch || {}));
-      next.opacity = Math.max(0, Math.min(1, Number(next.opacity)));
+      const opacity = Number(next.opacity);
+      next.opacity = Number.isFinite(opacity) ? Math.max(0, Math.min(1, opacity)) : 1;
       this.items.set(id, next);
       emit('layer.state.changed', { layer_id: id, state: clone(next) });
       return clone(next);
@@ -90,6 +94,7 @@
     register(kind, adapter, meta) {
       if (!kind || !adapter) throw new Error('Adapter cần kind và implementation');
       this.items.set(kind, { adapter: adapter, meta: Object.assign({}, meta || {}) });
+      emit('layer.adapter.registered', { kind: kind, meta: clone(meta || {}) });
       return this;
     }
     unregister(kind) { this.items.delete(kind); return this; }
@@ -121,6 +126,7 @@
   const state = new LayerState();
   const adapters = new AdapterRegistry();
   const catalog = new DataCatalog();
+  const runtime = { bootstrapped: false, groups: [], errors: [] };
 
   function core() { return global.Vietflex && global.Vietflex.CoreTech ? global.Vietflex.CoreTech : null; }
   function emit(type, payload) {
@@ -151,30 +157,62 @@
     if (operation === 'filter') return state.set(layer.id, { filter: p.filter === undefined ? null : p.filter });
     if (operation === 'time') return state.set(layer.id, { time: p.time === undefined ? null : p.time });
 
-    const adapterKind = layer.source.adapter;
-    const result = await adapters.execute(adapterKind, operation, layer, p, context || {});
+    const result = await adapters.execute(layer.source.adapter, operation, layer, p, context || {});
     emit('layer.' + operation + '.completed', { layer_id: layer.id });
     return result;
+  }
+
+  async function fetchJSON(url) {
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) throw new Error('Không thể tải ' + url + ': HTTP ' + response.status);
+    return response.json();
+  }
+
+  async function bootstrap(options) {
+    const opts = options || {};
+    const configUrl = opts.layers || DEFAULT_LAYER_CONFIG;
+    const catalogUrl = opts.catalog || DEFAULT_CATALOG;
+    runtime.errors = [];
+    try {
+      const results = await Promise.all([fetchJSON(configUrl), fetchJSON(catalogUrl)]);
+      const layerConfig = results[0] || {};
+      const dataCatalog = results[1] || {};
+      runtime.groups = clone(layerConfig.groups || []);
+      (dataCatalog.datasets || []).forEach(function (d) { catalog.register(d); });
+      (layerConfig.layers || []).forEach(function (l) { registry.register(l); });
+      runtime.bootstrapped = true;
+      emit('layer.platform.ready', { version: VERSION, layers: registry.list().length, datasets: catalog.list().length });
+      return API.manifest();
+    } catch (error) {
+      runtime.errors.push(String(error && error.message ? error.message : error));
+      emit('layer.platform.error', { error: runtime.errors[0] });
+      throw error;
+    }
   }
 
   const API = {
     version: VERSION,
     contract: CONTRACT,
+    contractUrl: CONTRACT_URL,
     validate: assertLayer,
     Registry: registry,
     State: state,
     Adapters: adapters,
     Catalog: catalog,
+    runtime: runtime,
     register: function (layer) { return registry.register(layer); },
     unregister: function (id) { return registry.unregister(id); },
     get: function (id) { return registry.get(id); },
     list: function (filter) { return registry.list(filter); },
+    groups: function () { return clone(runtime.groups); },
     registerAdapter: function (kind, adapter, meta) { adapters.register(kind, adapter, meta); return API; },
     registerDataset: function (dataset) { return catalog.register(dataset); },
     execute: dispatch,
+    bootstrap: bootstrap,
     manifest: function () {
       return {
         name: 'Vietflex GIS Layer Platform', version: VERSION, contract: CONTRACT,
+        bootstrapped: runtime.bootstrapped, groups: clone(runtime.groups), errors: clone(runtime.errors),
         layers: registry.list(), adapters: adapters.list(), datasets: catalog.list(), state: state.snapshot()
       };
     }
@@ -184,6 +222,12 @@
     const c = core();
     if (!c) return false;
     if (!c.Layers) c.Layers = API;
+
+    if (c.Schema && typeof c.Schema.register === 'function' && !c.Schema.registry.has('vf.layer.contract')) {
+      c.Schema.register('vf.layer.contract', { $ref: CONTRACT_URL, id: CONTRACT, version: '1.0.0' }, {
+        kind: 'layer-contract', stable: true, extension: 'vf.gis.layers'
+      });
+    }
 
     const capabilityDefs = [
       ['render','read'], ['toggle','read'], ['identify','read'], ['filter','read'], ['legend','read'],
@@ -202,7 +246,7 @@
       if (!exists) c.Plugins.install({
         id: 'vf.gis.layers', version: VERSION,
         requires: { core: '>=0.4.0' },
-        schemas: ['vietflex-layer/1.0'],
+        schemas: [CONTRACT],
         capabilities: capabilityDefs.map(function (x) { return 'layer.' + x[0]; }),
         layers: []
       }, API);
@@ -213,4 +257,8 @@
   API.installIntoCore = installIntoCore;
   global.VietflexLayers = API;
   installIntoCore();
+
+  if (typeof document !== 'undefined') {
+    Promise.resolve().then(function () { return bootstrap(); }).catch(function () {});
+  }
 })(typeof window !== 'undefined' ? window : globalThis);
