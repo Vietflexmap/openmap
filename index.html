@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Vietflex OpenMap</title>
 
-  <link rel="stylesheet" href="./dist/vietflex.css?v=20260916-0835">
-  <script src="./dist/vietflex.js?v=20260916-0835"></script>
-  <script src="./dist/vietflex-core.js?v=20260916-0835"></script>
-  <script src="./dist/vietflex-platform.js?v=20260916-0835"></script>
+  <link rel="stylesheet" href="./dist/vietflex.css?v=20260916-0845">
+  <script src="./dist/vietflex.js?v=20260916-0845"></script>
+  <script src="./dist/vietflex-core.js?v=20260916-0845"></script>
+  <script src="./dist/vietflex-platform.js?v=20260916-0845"></script>
 
   <style>
     html, body {
@@ -17,15 +17,11 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    #map {
-      width: 100%;
-      height: 100%;
-    }
+    #map { width: 100%; height: 100%; }
 
-    /* Branding Vietflex độc lập với attribution của dữ liệu nền. */
     .vf-map-credit {
       position: absolute;
-      right: 42px;
+      right: 46px;
       bottom: 6px;
       z-index: 999;
       display: inline-flex;
@@ -43,16 +39,8 @@
       cursor: pointer;
     }
 
-    .vf-map-credit:hover {
-      color: #0d47a1;
-      background: #fff;
-      box-shadow: 0 2px 7px rgba(0, 0, 0, .2);
-    }
-
-    .vf-map-credit:focus-visible {
-      outline: 2px solid #1565c0;
-      outline-offset: 2px;
-    }
+    .vf-map-credit:hover { color: #0d47a1; background: #fff; }
+    .vf-map-credit:focus-visible { outline: 2px solid #1565c0; outline-offset: 2px; }
 
     .vf-flag {
       width: 20px;
@@ -64,33 +52,55 @@
       flex: 0 0 auto;
     }
 
-    .vf-flag svg {
-      width: 100%;
-      height: 100%;
-      display: block;
+    .vf-flag svg { width: 100%; height: 100%; display: block; }
+
+    .vf-attrib-wrap {
+      position: absolute;
+      right: 8px;
+      bottom: 6px;
+      z-index: 1000;
     }
 
-    /* Attribution nguồn dữ liệu chỉ hiện sau nút info compact. */
-    .maplibregl-ctrl-attrib.maplibregl-compact {
-      min-width: 28px;
-      min-height: 28px;
+    .vf-attrib-toggle {
+      width: 30px;
+      height: 30px;
+      border: 0;
       border-radius: 50%;
-      background: rgba(255,255,255,.96);
+      background: rgba(255,255,255,.97);
+      box-shadow: 0 1px 5px rgba(0,0,0,.18);
+      color: #17212b;
+      font: 700 18px/30px Georgia, serif;
+      padding: 0;
+      cursor: pointer;
     }
 
-    .maplibregl-ctrl-attrib.maplibregl-compact:not(.maplibregl-compact-show) .maplibregl-ctrl-attrib-inner {
-      display: none !important;
+    .vf-attrib-toggle:hover { background: #fff; }
+    .vf-attrib-toggle:focus-visible { outline: 2px solid #1565c0; outline-offset: 2px; }
+
+    .vf-attrib-panel {
+      position: absolute;
+      right: 0;
+      bottom: 36px;
+      display: none;
+      width: max-content;
+      max-width: min(720px, calc(100vw - 24px));
+      padding: 7px 10px;
+      border-radius: 7px;
+      background: rgba(255,255,255,.98);
+      box-shadow: 0 2px 10px rgba(0,0,0,.20);
+      color: #26313b;
+      font: 11px/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      white-space: normal;
     }
 
-    .maplibregl-ctrl-attrib.maplibregl-compact .maplibregl-ctrl-attrib-button {
-      display: block !important;
-    }
+    .vf-attrib-panel.is-open { display: block; }
+    .vf-attrib-panel a { color: #1565c0; text-decoration: none; }
+    .vf-attrib-panel a:hover { text-decoration: underline; }
 
     @media (max-width: 700px) {
-      .vf-map-credit {
-        right: 40px;
-        bottom: 5px;
-      }
+      .vf-map-credit { right: 44px; bottom: 5px; }
+      .vf-attrib-wrap { right: 6px; bottom: 5px; }
+      .vf-attrib-panel { max-width: calc(100vw - 20px); }
     }
   </style>
 </head>
@@ -107,13 +117,29 @@
     <span class="vf-flag" aria-hidden="true">
       <svg viewBox="0 0 30 20" xmlns="http://www.w3.org/2000/svg">
         <rect width="30" height="20" fill="#da251d"/>
-        <polygon
-          fill="#ffde00"
-          points="15,3.1 16.75,8.45 22.38,8.45 17.82,11.76 19.56,17.1 15,13.8 10.44,17.1 12.18,11.76 7.62,8.45 13.25,8.45"/>
+        <polygon fill="#ffde00" points="15,3.1 16.75,8.45 22.38,8.45 17.82,11.76 19.56,17.1 15,13.8 10.44,17.1 12.18,11.76 7.62,8.45 13.25,8.45"/>
       </svg>
     </span>
     <span>Vietflex | OpenMap</span>
   </a>
+
+  <div class="vf-attrib-wrap">
+    <button
+      id="vf-attrib-toggle"
+      class="vf-attrib-toggle"
+      type="button"
+      aria-label="Thông tin nguồn bản đồ"
+      aria-expanded="false"
+      aria-controls="vf-attrib-panel"
+      title="Thông tin nguồn bản đồ">ⓘ</button>
+
+    <div id="vf-attrib-panel" class="vf-attrib-panel" role="dialog" aria-label="Nguồn dữ liệu bản đồ">
+      Nhãn tham chiếu tiếng Việt: Vietflex OpenMap |
+      <a href="https://openfreemap.org/" target="_blank" rel="noopener noreferrer">OpenFreeMap</a> |
+      <a href="https://www.openmaptiles.org/" target="_blank" rel="noopener noreferrer">© OpenMapTiles</a> |
+      Data from <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>
+    </div>
+  </div>
 
   <script>
     const map = Vietflex.vietflexMap('map', {
@@ -130,12 +156,24 @@
     new Vietflex.BasemapControl({ position: 'topright' }).addTo(map);
     new Vietflex.ScaleControl({ position: 'bottomleft' }).addTo(map);
 
-    // Nguồn OpenStreetMap/OpenMapTiles/OpenFreeMap vẫn có thể xem qua nút info,
-    // nhưng không hiển thị chuỗi dài thường trực trên giao diện.
-    new Vietflex.AttributionControl({
-      position: 'bottomright',
-      compact: true
-    }).addTo(map);
+    const attribToggle = document.getElementById('vf-attrib-toggle');
+    const attribPanel = document.getElementById('vf-attrib-panel');
+
+    function setAttributionOpen(open) {
+      attribPanel.classList.toggle('is-open', open);
+      attribToggle.setAttribute('aria-expanded', String(open));
+    }
+
+    attribToggle.addEventListener('click', (event) => {
+      event.stopPropagation();
+      setAttributionOpen(!attribPanel.classList.contains('is-open'));
+    });
+
+    attribPanel.addEventListener('click', (event) => event.stopPropagation());
+    document.addEventListener('click', () => setAttributionOpen(false));
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') setAttributionOpen(false);
+    });
 
     function suppressDuplicateBienDong(rawMap) {
       const style = rawMap.getStyle();
@@ -152,14 +190,7 @@
         try {
           const current = rawMap.getLayoutProperty(layer.id, 'text-field');
           if (current === undefined || current === null) return;
-
-          const featureName = [
-            'coalesce',
-            ['get', 'name:vi'],
-            ['get', 'name_vi'],
-            ['get', 'name']
-          ];
-
+          const featureName = ['coalesce', ['get', 'name:vi'], ['get', 'name_vi'], ['get', 'name']];
           rawMap.setLayoutProperty(layer.id, 'text-field', [
             'case',
             ['==', featureName, 'Biển Đông'],
@@ -176,18 +207,13 @@
       if (rawMap.isStyleLoaded()) apply();
     });
 
-    // Core Tech vẫn được nạp làm nền kỹ thuật, nhưng không hiển thị kiến trúc trên UI.
     if (Vietflex.CoreTech) {
       Vietflex.CoreTech.configure({ language: 'vi', datasetVersion: 'dev' });
       Vietflex.CoreTech.Adapters.register('maplibre', {}, {
-        kind: 'maplibre',
-        status: 'active',
-        role: 'renderer'
+        kind: 'maplibre', status: 'active', role: 'renderer'
       });
       Vietflex.CoreTech.Gateways.register('cdn', {}, {
-        port: 'cdn',
-        status: 'active',
-        role: 'static-distribution'
+        port: 'cdn', status: 'active', role: 'static-distribution'
       });
     }
   </script>
