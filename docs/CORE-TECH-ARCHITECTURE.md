@@ -1,66 +1,72 @@
-# VIETFLEX CORE TECH — Kiến trúc lõi chính thức
+# VIETFLEX CORE TECH 0.5 — Kiến trúc lõi chính thức
 
-`openmap` được chốt là **Core Technology Layer dùng chung**, không phải một WebGIS sản phẩm, không phải backend duy nhất và không phải MCP server. Kiến trúc áp dụng nguyên tắc **Ports & Adapters (Hexagonal Architecture)** để có thể thay engine, storage, AI hoặc gateway mà không phá ứng dụng phía trên.
+## 1. Mục tiêu
+
+`openmap` là **Core Technology Layer + reference client**. Stable core định nghĩa contract; công nghệ triển khai cụ thể được thay qua adapter/gateway.
+
+Nguyên tắc trung tâm:
+
+```text
+Data → Event → Spatial/Temporal Context → Capability → Action
+```
+
+Core không giả định một PostGIS, một routing provider, một AI model hay một message broker duy nhất.
+
+## 2. Kiến trúc
 
 ```text
                            VIETFLEX CORE TECH
                                   │
-                ┌─────────────────┼─────────────────┐
-                ↓                 ↓                 ↓
-            Schema Core      Capability Core    Event Core
-                │                 │                 │
-                └─────────────────┼─────────────────┘
-                                  ↓
-                            Domain Services
+        ┌─────────────────────────┼──────────────────────────┐
+        │                         │                          │
+   SCHEMA CORE              CAPABILITY CORE             EVENT CORE
+        │                         │                          │
+        └─────────────────────────┼──────────────────────────┘
                                   │
-              ┌───────────────────┼────────────────────┐
-              ↓                   ↓                    ↓
-          Data Core          Spatial Core          Temporal Core
-              │                   │                    │
-              └───────────────────┼────────────────────┘
-                                  ↓
-                             Adapter Layer
+                           DOMAIN SERVICES
                                   │
- ┌────────┬─────────┬────────┬────┼────┬────────┬─────────┐
- ↓        ↓         ↓        ↓         ↓        ↓         ↓
-PostGIS PMTiles    COG    Valhalla   Photon   MQTT     GeoAI
+             ┌────────────────────┼────────────────────┐
+             │                    │                    │
+         DATA CORE          SPATIAL CORE         TEMPORAL CORE
+             │                    │                    │
+             └────────────────────┼────────────────────┘
                                   │
-                                  ↓
-                             PORT / GATEWAYS
+                       SPATIAL CONTEXT ENGINE
                                   │
-              ┌──────────┬────────┼─────────┐
-              ↓          ↓        ↓         ↓
-             CDN        API      MCP      Events
-              │          │        │         │
-              └──────────┴────────┼─────────┘
-                                  ↓
-                            SDK / Plugins
-                                  ↓
-       WebGIS / Mobile / Vehicle / Robot / xADAS / AI Agent
+             nearby / onRoute / intersects / risk
+                                  │
+             ┌────────────────────┼────────────────────┐
+             │                    │                    │
+        ROUTE ENGINE         WATCH ENGINE        KNOWLEDGE CORE
+             │                    │                    │
+             └────────────────────┼────────────────────┘
+                                  │
+                            ADAPTER LAYER
+                                  │
+ ┌─────────┬─────────┬─────────┬──┴───┬────────┬─────────┬─────────┐
+ ↓         ↓         ↓         ↓      ↓        ↓         ↓
+PostGIS  PMTiles    COG    Valhalla Photon    MQTT     GeoAI
+                                  │
+                         PORTS / GATEWAYS
+                                  │
+           ┌───────────┬──────────┼──────────┬─────────┐
+           ↓           ↓          ↓          ↓         ↓
+          CDN         API        MCP        SSE       MQTT
+                                  │
+                              SDK / Plugins
+                                  │
+       ┌──────────┬──────────┬────┴────┬─────────┬───────────┐
+       ↓          ↓          ↓         ↓         ↓
+     WebGIS     Mobile    Vehicle    Robot      AI Agent
 ```
 
-## Core không phụ thuộc vendor
+## 3. Core contracts
 
-Domain Core không được gọi trực tiếp PostGIS, MapLibre, Valhalla, Photon, MQTT hoặc model AI. Domain Core chỉ biết **schema**, **capability**, **event** và hợp đồng adapter.
+### Schema Core
 
-Ví dụ capability ổn định:
+Schema Core quản lý namespace và contract machine-readable.
 
-```text
-spatial.buffer
-spatial.intersect
-places.search
-routing.route
-routing.map-match
-terrain.elevation
-event.query
-geoai.detect
-```
-
-Backend thực hiện capability có thể thay đổi độc lập.
-
-## Schema Core
-
-Schema Core là hợp đồng dữ liệu lâu dài. Namespace chính:
+Namespace 0.5:
 
 ```text
 vf.feature
@@ -75,131 +81,273 @@ vf.raster
 vf.terrain
 vf.ai_result
 vf.route
+vf.watch
+vf.knowledge
+vf.context
+vf.dataset
 ```
 
-Mọi object nên giữ version, source, provenance, quality và thời gian.
+### Capability Core
 
-## Capability Core
-
-Capability là đơn vị chức năng dùng chung cho SDK, API, MCP, CLI và Agent. Mỗi capability có:
-
-- `id`
-- `version`
-- `category`
-- `permission`: `read | analyze | write | control`
-- input schema
-- output schema
-- provider metadata
-
-Một capability chỉ được implement một lần ở domain/adapter layer; các gateway chỉ expose lại capability đó.
-
-## Event Core
-
-Event Core cung cấp event contract và event bus nội bộ. Dữ liệu GPS, camera, OBD, TPMS, IoT, AI detection có thể quy về timeline/event chung.
-
-## Domain Services
-
-Domain Services là nơi phối hợp các capability thành workflow nghiệp vụ tổng quát nhưng không chứa business logic của sản phẩm cụ thể như xADAS, cứu hộ, quy hoạch hay thủy sản.
-
-## Data Core
-
-Quản lý source registry và provenance cho:
-
-- OSM
-- DEM
-- satellite/EO
-- GPS
-- camera/video
-- IoT
-- TPMS
-- OBD/CAN
-- IMU
-- LiDAR
-
-## Spatial Core
-
-Spatial Core gọi capability thay vì gọi backend trực tiếp. Ví dụ:
-
-```js
-Vietflex.CoreTech.Spatial.run('buffer', payload)
-```
-
-sẽ resolve capability `spatial.buffer`.
-
-## Temporal Core
-
-Chuẩn hóa ISO-8601 UTC, timeline và alignment giữa nhiều stream. Timestamp gốc/timezone có thể được giữ trong metadata để audit.
-
-## Adapter Layer
-
-Adapter là nơi tích hợp công nghệ cụ thể:
-
-- PostGIS / GPKG
-- PMTiles / COG / Object Storage
-- MapLibre
-- Valhalla
-- Photon
-- MQTT / device drivers
-- GeoAI models/services
-
-Adapter có thể thay mà không thay public domain contract.
-
-## PORT / GATEWAYS
-
-Gateway là lớp expose Core ra ngoài:
-
-- **CDN**: JS/CSS/schema/style/plugin/manifest tĩnh.
-- **API**: HTTP/REST/JSON service gateway.
-- **MCP**: AI/Agent gateway; mapping tools/resources/prompts sang capability/resource trong core.
-- **Events**: WebSocket/MQTT/SSE gateway cho stream thời gian thực.
-
-MCP không được tự query PostGIS hoặc routing backend. Luồng đúng:
-
-```text
-AI -> MCP Gateway -> Capability Core -> Adapter -> Backend
-```
-
-API cũng áp dụng cùng nguyên tắc.
-
-## SDK / Plugins
-
-SDK và plugin là lớp mở rộng phía trên core. Plugin chuyên đề không sửa file lõi.
+Capability là đơn vị hành vi ổn định. Gateway không được viết lại logic đã có trong capability.
 
 Ví dụ:
 
 ```text
-plugins/flood
-plugins/planning
-plugins/traffic
-plugins/aquaculture
-plugins/adas
+spatial.nearby
+context.on-route
+routing.analyze-hazards
+watch.evaluate
+knowledge.risk-profile
 ```
 
-Plugin manifest khai báo schema, layers, capabilities và adapter cần thiết. Khi plugin được cài, capability registry có thể expose tự động qua SDK/API/MCP.
+`routing.route`, `places.search`, `geoai.*` có thể do adapter/backend thực hiện.
 
-## Versioning
+### Event Core
 
-Tách version độc lập:
+Event Core là hợp đồng chung của trạng thái động. Event phải phân biệt:
+
+```text
+observed_at   = thời điểm hiện tượng được quan sát
+valid_from    = bắt đầu có hiệu lực
+valid_to      = hết hiệu lực nghiệp vụ
+received_at   = Core nhận dữ liệu lúc nào
+expires_at    = sau thời điểm này không được coi là current
+```
+
+Không dùng một `timestamp` duy nhất cho mọi ý nghĩa thời gian.
+
+### Data Core
+
+Data Core có hai registry độc lập:
+
+```text
+Source Registry
+Dataset Registry
+```
+
+Dataset phải có khả năng mang metadata về version, license, provenance, quality, update policy, format và endpoint.
+
+## 4. Spatial Context Engine
+
+Spatial Context nằm giữa raw GIS operation và product business logic.
+
+Nhiệm vụ:
+
+```text
+nearby
+onRoute
+intersects
+risk
+evaluate
+```
+
+Input điển hình:
+
+```js
+{
+  position,
+  route,
+  events,
+  datasets,
+  knowledge,
+  options
+}
+```
+
+Output là context đã đánh giá, không phải chỉ một danh sách layer.
+
+## 5. Route Engine
+
+Route Engine có hai trách nhiệm tách biệt:
+
+1. route provider facade (`Valhalla`, `OSRM`, provider khác);
+2. context/hazard analysis độc lập provider.
+
+```text
+Route Provider
+     ↓
+Route Geometry
+     ↓
+Spatial Context
+     ↓
+Hazard Analysis
+```
+
+Điều này cho phép đổi routing backend mà không mất hazard logic.
+
+## 6. Watch Engine
+
+Watch target chuẩn:
+
+```text
+point
+route
+polygon
+asset
+```
+
+Conditions chuẩn có thể gồm:
+
+```text
+event_types
+status
+min_severity
+min_confidence
+```
+
+Watch Engine chỉ match. Delivery thực tế đi qua Push/SSE/MQTT/Webhook/Email adapter.
+
+## 7. Knowledge Core
+
+Knowledge Core không phải vector database và không khóa vào một database.
+
+Nó định nghĩa contract cho:
+
+- historical event memory;
+- derived facts;
+- evidence;
+- confidence;
+- risk profile;
+- patterns.
+
+Storage bền vững phải đi qua adapter.
+
+## 8. Adapter Layer
+
+Adapters triển khai technology-specific behavior:
+
+```text
+PostGIS / GPKG
+PMTiles / COG / Object Storage
+MapLibre
+Valhalla / Photon
+MQTT / SSE
+GeoAI
+Device Drivers
+```
+
+Adapter có thể bị thay mà không thay stable public contract.
+
+## 9. Ports / Gateways
+
+### CDN
+
+Active. GitHub Pages/jsDelivr phân phối static artifacts.
+
+### API
+
+HTTP capability gateway. Planned; phải map request vào Capability Core.
+
+### MCP
+
+AI/Agent gateway. Planned; MCP tool/resource không query backend trực tiếp nếu capability tương ứng tồn tại.
+
+### SSE
+
+Server → client realtime event stream. Planned.
+
+### MQTT
+
+IoT/device event transport. Planned.
+
+`Events` của 0.4.x được giữ làm compatibility alias trong runtime gateway port list.
+
+## 10. Local runtime capabilities
+
+0.5.0 có các capability chạy browser-side không cần backend:
+
+```text
+spatial.distance
+spatial.nearby
+spatial.intersects
+context.nearby
+context.on-route
+context.risk
+routing.analyze-hazards
+watch.create
+watch.evaluate
+knowledge.query
+knowledge.risk-profile
+event.publish
+```
+
+Đây là reference implementation; production có thể thay bằng backend capability nhưng giữ id/contract.
+
+## 11. Security boundary
+
+GitHub Pages không được giữ:
+
+- database credential;
+- API secret;
+- VAPID private key;
+- MQTT password;
+- private routing/geocoding key;
+- model secret.
+
+Secrets nằm ở dynamic gateway/backend.
+
+## 12. Versioning
+
+Tách độc lập:
 
 ```text
 core_api_version
 schema_version
 dataset_version
 adapter_version
+gateway_version
 plugin_version
 model_version
 ```
 
-Không dùng một version chung cho mọi thứ.
+Core 0.5.0 không đồng nghĩa mọi dataset/plugin phải mang version 0.5.0.
 
-## Vai trò của GitHub Pages
+## 13. Production flow đề xuất
 
-`https://vietflexmap.github.io/openmap/` là:
+```text
+OSM / Sensor / VNMHA / Camera / User
+                  ↓
+              Adapters
+                  ↓
+           Dataset / Event
+                  ↓
+       Spatial + Temporal Core
+                  ↓
+        Spatial Context Engine
+                  ↓
+     Route / Watch / Knowledge
+                  ↓
+           Capability Core
+                  ↓
+       API / MCP / SSE / MQTT
+                  ↓
+WebGIS / Mobile / Vehicle / Robot / Agent
+```
 
-- reference implementation;
-- static CDN/source distribution;
-- schema/manifest/docs endpoint;
-- demo renderer;
-- nơi công bố Core contract.
+## 14. Điều không đưa vào stable core
 
-Nó **không phải** production PostGIS/API/MCP/routing/AI backend. Các gateway động phải được triển khai tách rời và kết nối qua contract của Vietflex Core Tech.
+Không đưa business logic riêng của:
+
+```text
+flood app
+planning app
+rescue app
+aquaculture app
+ADAS product
+tourism app
+```
+
+Các logic này nằm ở plugin/product domain layer và sử dụng Core contract.
+
+## 15. Definition of Done cho capability mới
+
+Một capability chỉ được coi là vào Core khi:
+
+1. có ID/version/category/permission;
+2. input/output contract rõ;
+3. không khóa vendor trong public interface;
+4. có failure semantics;
+5. có provenance/time semantics nếu xử lý dữ liệu;
+6. có test hoặc reference implementation;
+7. API/MCP nếu expose phải gọi lại capability, không viết logic song song.
