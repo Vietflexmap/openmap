@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vietflexmap.github.io/openmap/schema/vietflex-route.schema.json",
+  "title": "Vietflex Route",
+  "type": "object",
+  "required": ["route_id", "schema_version", "geometry"],
+  "properties": {
+    "route_id": {"type": "string", "minLength": 1},
+    "schema_version": {"type": "string"},
+    "geometry": {"type": "object"},
+    "mode": {"type": ["string", "null"]},
+    "distance_m": {"type": ["number", "null"], "minimum": 0},
+    "duration_s": {"type": ["number", "null"], "minimum": 0},
+    "provider": {"type": ["string", "null"]},
+    "hazards": {"type": "array"},
+    "created_at": {"type": ["string", "null"], "format": "date-time"},
+    "metadata": {"type": "object"}
+  },
+  "additionalProperties": true
+}
