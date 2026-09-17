@@ -3,21 +3,127 @@
   "$id": "https://vietflexmap.github.io/openmap/schema/vietflex-feature.schema.json",
   "title": "Vietflex Feature",
   "type": "object",
-  "required": ["vf_id", "vf_type", "schema_version"],
+  "required": [
+    "vf_id",
+    "vf_type",
+    "schema_version"
+  ],
   "properties": {
-    "vf_id": { "type": "string", "minLength": 1 },
-    "vf_type": { "type": "string", "minLength": 1 },
-    "schema_version": { "type": "string" },
-    "dataset_version": { "type": ["string", "null"] },
-    "source": { "type": ["string", "null"] },
-    "source_id": { "type": ["string", "null"] },
-    "name_vi": { "type": ["string", "null"] },
-    "name": { "type": ["string", "null"] },
-    "observed_at": { "type": ["string", "null"], "format": "date-time" },
-    "ingested_at": { "type": ["string", "null"], "format": "date-time" },
-    "geometry": { "type": ["object", "null"] },
-    "properties": { "type": "object" },
-    "metadata": { "type": "object" }
+    "vf_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "vf_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "dataset_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "geometry": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "properties": {
+      "type": "object"
+    },
+    "name_vi": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "time": {
+      "type": "object",
+      "properties": {
+        "observed_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "valid_from": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "valid_to": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "received_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "expires_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": true
+    },
+    "source": {
+      "type": [
+        "object",
+        "string",
+        "null"
+      ]
+    },
+    "provenance": {
+      "type": "object"
+    },
+    "quality": {
+      "type": "object"
+    },
+    "metadata": {
+      "type": "object"
+    },
+    "source_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "observed_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "ingested_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    }
   },
   "additionalProperties": true
 }
