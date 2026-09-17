@@ -1,0 +1,45 @@
+name: Core Tech CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dist/**'
+      - 'schema/**'
+      - 'manifest.json'
+      - 'tests/**'
+      - '.github/workflows/core-tech-ci.yml'
+  pull_request:
+    paths:
+      - 'dist/**'
+      - 'schema/**'
+      - 'manifest.json'
+      - 'tests/**'
+      - '.github/workflows/core-tech-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  core-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: JavaScript syntax
+        run: node --check dist/vietflex-platform.js
+      - name: Runtime smoke test
+        run: node tests/core-tech-smoke.js
+      - name: Parse manifest and schemas
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
+          for (const file of fs.readdirSync('schema').filter(x => x.endsWith('.json'))) {
+            JSON.parse(fs.readFileSync(path.join('schema', file), 'utf8'));
+          }
+          console.log('Manifest + schema JSON parse OK');
+          NODE
