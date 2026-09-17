@@ -1,8 +1,8 @@
 {
   "name": "VIETFLEX CORE TECH",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "architecture": "ports-and-adapters",
-  "description_vi": "Lõi công nghệ nền dùng chung cho bản đồ, dữ liệu không gian, AI, IoT và các ứng dụng Vietflex.",
+  "description_vi": "Lõi công nghệ nền dùng chung cho bản đồ, dữ liệu không gian, sự kiện, ngữ cảnh không gian, định tuyến, theo dõi, tri thức, AI và IoT.",
   "core": {
     "schema": true,
     "capability": true,
@@ -10,8 +10,38 @@
     "domain_services": true,
     "data": true,
     "spatial": true,
-    "temporal": true
+    "temporal": true,
+    "spatial_context": true,
+    "route": true,
+    "watch": true,
+    "knowledge": true
   },
+  "contracts": {
+    "feature": "schema/vietflex-feature.schema.json",
+    "event": "schema/vietflex-event.schema.json",
+    "dataset": "schema/vietflex-dataset.schema.json",
+    "context": "schema/vietflex-context.schema.json",
+    "route": "schema/vietflex-route.schema.json",
+    "watch": "schema/vietflex-watch.schema.json",
+    "knowledge": "schema/vietflex-knowledge.schema.json",
+    "capability": "schema/vietflex-capability.schema.json",
+    "plugin": "schema/vietflex-plugin.schema.json",
+    "layer": "schema/vietflex-layer.schema.json"
+  },
+  "runtime_local_capabilities": [
+    "spatial.distance",
+    "spatial.nearby",
+    "spatial.intersects",
+    "context.nearby",
+    "context.on-route",
+    "context.risk",
+    "routing.analyze-hazards",
+    "watch.create",
+    "watch.evaluate",
+    "knowledge.query",
+    "knowledge.risk-profile",
+    "event.publish"
+  ],
   "adapters": [
     "PostGIS",
     "GPKG",
@@ -22,14 +52,31 @@
     "Valhalla",
     "Photon",
     "MQTT",
+    "SSE",
     "GeoAI",
     "Device Drivers"
   ],
   "ports": {
-    "cdn": { "status": "active", "role": "static SDK/schema/style/plugin distribution" },
-    "api": { "status": "planned", "role": "HTTP service gateway" },
-    "mcp": { "status": "planned", "role": "AI/agent gateway" },
-    "events": { "status": "planned", "role": "WebSocket/MQTT/event gateway" }
+    "cdn": {
+      "status": "active",
+      "role": "static SDK/schema/style/plugin/manifest distribution"
+    },
+    "api": {
+      "status": "planned",
+      "role": "HTTP capability gateway"
+    },
+    "mcp": {
+      "status": "planned",
+      "role": "AI/agent capability gateway"
+    },
+    "sse": {
+      "status": "planned",
+      "role": "server-to-client realtime event gateway"
+    },
+    "mqtt": {
+      "status": "planned",
+      "role": "IoT/device realtime gateway"
+    }
   },
   "sdk_plugins": {
     "javascript": "active",
@@ -37,17 +84,24 @@
     "python": "planned",
     "mobile": "planned"
   },
-  "schema_version": "0.4.0",
+  "schema_version": "0.5.0",
   "dataset_version": null,
+  "compatibility": [
+    "0.4.x",
+    "0.3.x aliases"
+  ],
   "principles": [
     "stable-domain-core",
     "schema-first",
     "capability-first",
+    "event-first",
     "ports-and-adapters",
     "backend-neutral",
     "plugin-extensible",
     "versioned-data",
     "provenance-and-qa",
+    "temporal-validity",
+    "spatial-context",
     "vietnamese-first"
   ]
 }
