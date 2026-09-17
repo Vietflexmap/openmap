@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vietflexmap.github.io/openmap/schema/vietflex-context.schema.json",
+  "title": "Vietflex Spatial Context",
+  "type": "object",
+  "properties": {
+    "position": {"type": ["object", "array", "null"]},
+    "route": {"type": ["object", "array", "null"]},
+    "events": {"type": "array"},
+    "datasets": {"type": "array"},
+    "knowledge": {"type": "array"},
+    "options": {
+      "type": "object",
+      "properties": {
+        "radiusM": {"type": "number", "minimum": 0},
+        "corridorM": {"type": "number", "minimum": 0},
+        "at": {"type": ["string", "null"], "format": "date-time"}
+      },
+      "additionalProperties": true
+    },
+    "evaluated_at": {"type": ["string", "null"], "format": "date-time"}
+  },
+  "additionalProperties": true
+}
