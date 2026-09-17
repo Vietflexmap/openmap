@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vietflexmap.github.io/openmap/schema/vietflex-watch.schema.json",
+  "title": "Vietflex Watch",
+  "type": "object",
+  "required": ["watch_id", "schema_version", "target", "enabled"],
+  "properties": {
+    "watch_id": {"type": "string", "minLength": 1},
+    "schema_version": {"type": "string"},
+    "name": {"type": ["string", "null"]},
+    "enabled": {"type": "boolean"},
+    "target": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {"enum": ["point", "route", "polygon", "asset"]},
+        "lat": {"type": "number"},
+        "lon": {"type": "number"},
+        "lng": {"type": "number"},
+        "radius_m": {"type": "number", "minimum": 0},
+        "corridor_m": {"type": "number", "minimum": 0},
+        "geometry": {"type": ["object", "null"]},
+        "shape": {"type": ["array", "null"]},
+        "asset_id": {"type": ["string", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "conditions": {
+      "type": "object",
+      "properties": {
+        "event_types": {"type": "array", "items": {"type": "string"}},
+        "status": {"type": "array", "items": {"type": "string"}},
+        "min_severity": {"type": ["number", "string", "null"]},
+        "min_confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1}
+      },
+      "additionalProperties": true
+    },
+    "delivery": {"type": "array"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "metadata": {"type": "object"}
+  },
+  "additionalProperties": true
+}
