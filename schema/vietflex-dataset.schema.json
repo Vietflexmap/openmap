@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vietflexmap.github.io/openmap/schema/vietflex-dataset.schema.json",
+  "title": "Vietflex Dataset",
+  "type": "object",
+  "required": ["dataset_id", "schema_version"],
+  "properties": {
+    "dataset_id": {"type": "string", "minLength": 1},
+    "schema_version": {"type": "string"},
+    "dataset_version": {"type": ["string", "null"]},
+    "title": {"type": ["string", "null"]},
+    "description": {"type": ["string", "null"]},
+    "format": {"type": ["string", "null"]},
+    "crs": {"type": ["string", "null"]},
+    "license": {"type": ["string", "object", "null"]},
+    "endpoint": {"type": ["string", "object", "null"]},
+    "provenance": {"type": "object"},
+    "quality": {"type": "object"},
+    "update_policy": {"type": "object"},
+    "temporal_extent": {"type": ["object", "null"]},
+    "spatial_extent": {"type": ["object", "array", "null"]},
+    "metadata": {"type": "object"}
+  },
+  "additionalProperties": true
+}
