@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vietflexmap.github.io/openmap/schema/vietflex-knowledge.schema.json",
+  "title": "Vietflex Knowledge",
+  "type": "object",
+  "required": ["knowledge_id", "schema_version", "type", "updated_at"],
+  "properties": {
+    "knowledge_id": {"type": "string", "minLength": 1},
+    "schema_version": {"type": "string"},
+    "type": {"type": "string"},
+    "geometry": {"type": ["object", "null"]},
+    "subject": {"type": ["string", "null"]},
+    "facts": {"type": "object"},
+    "evidence": {"type": "array"},
+    "confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+    "valid_from": {"type": ["string", "null"], "format": "date-time"},
+    "valid_to": {"type": ["string", "null"], "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"},
+    "provenance": {"type": "object"}
+  },
+  "additionalProperties": true
+}
