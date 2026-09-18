@@ -1,5 +1,5 @@
 {
-  "schema": "vietflex-basemaps/0.3",
+  "schema": "vietflex-basemaps/0.4",
   "default": "simple",
   "architecture": "plugin-adapter",
   "basemaps": [
@@ -9,7 +9,11 @@
       "kind": "vector-style",
       "provider": "OpenFreeMap",
       "source": "https://tiles.openfreemap.org/styles/positron",
-      "capabilities": ["vector", "labels", "lightweight"]
+      "capabilities": [
+        "vector",
+        "labels",
+        "lightweight"
+      ]
     },
     {
       "id": "dark",
@@ -17,7 +21,11 @@
       "kind": "vector-style",
       "provider": "OpenFreeMap",
       "source": "https://tiles.openfreemap.org/styles/dark",
-      "capabilities": ["vector", "labels", "dark"]
+      "capabilities": [
+        "vector",
+        "labels",
+        "dark"
+      ]
     },
     {
       "id": "terrain",
@@ -26,7 +34,13 @@
       "provider": "Vietflex DEM",
       "manifest": "./terrain/manifest.json",
       "base_style": "https://tiles.openfreemap.org/styles/positron",
-      "capabilities": ["raster-dem", "hillshade", "terrain-3d", "topographic", "self-hosted"],
+      "capabilities": [
+        "raster-dem",
+        "hillshade",
+        "terrain-3d",
+        "topographic",
+        "self-hosted"
+      ],
       "fallback": "simple",
       "replaceable_adapter": true
     },
@@ -36,7 +50,11 @@
       "kind": "raster-xyz",
       "provider": "Esri World Imagery",
       "source": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-      "capabilities": ["raster", "satellite", "imagery"],
+      "capabilities": [
+        "raster",
+        "satellite",
+        "imagery"
+      ],
       "replaceable_adapter": true
     },
     {
@@ -45,7 +63,12 @@
       "kind": "raster-package",
       "provider": "Vietflex self-hosted raster",
       "manifest": "./basemaps/vietflex/manifest.json",
-      "capabilities": ["raster", "administrative", "offline-ready", "self-hosted"],
+      "capabilities": [
+        "raster",
+        "administrative",
+        "offline-ready",
+        "self-hosted"
+      ],
       "fallback": "simple",
       "replaceable_adapter": true
     },
@@ -65,6 +88,28 @@
         "online"
       ],
       "replaceable_adapter": true
+    },
+    {
+      "id": "vnmap",
+      "name": "VNMap Core",
+      "kind": "vnmap-core",
+      "provider": "Vietflex Core",
+      "manifest": "./basemaps/vnmap-core/manifest.json",
+      "capabilities": [
+        "vector",
+        "mvt",
+        "pmtiles-ready",
+        "administrative",
+        "transport",
+        "poi",
+        "building",
+        "offline-ready",
+        "self-hosted-ready",
+        "provider-neutral"
+      ],
+      "fallback": "simple",
+      "replaceable_adapter": true,
+      "core_contract": true
     }
   ],
   "principles": [
@@ -75,6 +120,8 @@
     "terrain-data-is-self-managed",
     "terrain-falls-back-without-breaking-map",
     "raster-package-is-self-hosted",
-    "binary-map-assets-live-outside-core"
+    "binary-map-assets-live-outside-core",
+    "vnmap-core-is-provider-neutral",
+    "vnmap-core-production-requires-provenance"
   ]
 }
