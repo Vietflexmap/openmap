@@ -1,0 +1,81 @@
+{
+  "schema": "vnmap-core/1.0",
+  "id": "vnmap",
+  "name": "VNMap Core",
+  "version": "0.1.0",
+  "status": "bootstrap",
+  "data_ready": false,
+  "renderer": "MapLibre GL JS",
+  "architecture": "provider-neutral-split-vector-core",
+  "bootstrap_style": "https://tiles.openfreemap.org/styles/liberty",
+  "style_url": "./basemaps/vnmap-core/style.json",
+  "storage_preference": ["pmtiles", "mvt-xyz", "raster-xyz-fallback"],
+  "bounds": [102.0, 7.5, 110.8, 23.5],
+  "minzoom": 0,
+  "maxzoom": 22,
+  "dataset_version": null,
+  "source_of_truth": [
+    "OpenStreetMap PBF under its applicable license",
+    "Vietnam administrative/geospatial datasets only when redistribution rights are documented"
+  ],
+  "domains": {
+    "basemap": {
+      "source_id": "vnmap-basemap",
+      "role": "water, landuse, administrative boundaries, place labels",
+      "minzoom": 0,
+      "maxzoom": 22,
+      "tile_template": "./basemaps/vnmap-core/tiles/basemap/{z}/{x}/{y}.pbf"
+    },
+    "transport": {
+      "source_id": "vnmap-transport",
+      "role": "roads, links, rail, ferry and transport infrastructure",
+      "minzoom": 4,
+      "maxzoom": 22,
+      "tile_template": "./basemaps/vnmap-core/tiles/transport/{z}/{x}/{y}.pbf"
+    },
+    "poi": {
+      "source_id": "vnmap-poi",
+      "role": "points of interest and address search/render features",
+      "minzoom": 10,
+      "maxzoom": 22,
+      "tile_template": "./basemaps/vnmap-core/tiles/poi/{z}/{x}/{y}.pbf"
+    },
+    "building": {
+      "source_id": "vnmap-building",
+      "role": "building footprints and future 3D attributes",
+      "minzoom": 15,
+      "maxzoom": 22,
+      "tile_template": "./basemaps/vnmap-core/tiles/building/{z}/{x}/{y}.pbf"
+    }
+  },
+  "core_source_layers": {
+    "basemap": ["water", "landuse", "admin", "place"],
+    "transport": ["road", "transport_point"],
+    "poi": ["poi"],
+    "building": ["building"]
+  },
+  "capabilities": [
+    "vector",
+    "mvt",
+    "pmtiles-ready",
+    "administrative",
+    "transport",
+    "poi",
+    "building",
+    "offline-ready",
+    "self-hosted-ready",
+    "provider-neutral"
+  ],
+  "attribution": "VNMap Core · bootstrap data © OpenStreetMap contributors / OpenMapTiles via OpenFreeMap until Vietflex datasets are published",
+  "production_gate": {
+    "requires_data_ready": true,
+    "requires_provenance": true,
+    "requires_redistribution_rights": true,
+    "requires_style_sprite_glyph_assets": true
+  },
+  "notes": [
+    "Bootstrap mode deliberately uses an external open vector style so the menu entry works before self-hosted tiles are published.",
+    "Set status=ready and data_ready=true only after the four domain tiles, style, sprite/glyph assets and provenance are published.",
+    "Commercial or third-party providers such as TEDP/VNPT/Google/Mapbox belong in adapters, not in VNMap Core."
+  ]
+}
