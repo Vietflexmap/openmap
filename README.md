@@ -208,6 +208,51 @@ plugins/adas
 
 Plugin có thể khai báo `schemas / layers / capabilities / adapters / gateways / requires / version`.
 
+## VNMap Core
+
+`VNMap Core 0.1.0` là profile **map/basemap data-core** của Vietflex, tách biệt với `Vietflex Core Tech` tổng quát. Trong reference client, mục **VNMap Core** nằm ngay dưới **Vietflex TEDP**.
+
+Public facade:
+
+```js
+VNMapCore.version
+VNMapCore.domains
+VNMapCore.manifest()
+VNMapCore.contract()
+VNMapCore.activate(map)
+VNMapCore.status()
+VNMapCore.isProductionReady()
+```
+
+Bốn miền dữ liệu lõi:
+
+```text
+basemap   -> water / landuse / admin / place
+transport -> road / rail / ferry / transport infrastructure
+poi       -> POI / address-facing features
+building  -> footprint / future 3D attributes
+```
+
+Pipeline mục tiêu:
+
+```text
+OSM PBF + dữ liệu Việt Nam có quyền tái phân phối
+                    ↓
+                 PostGIS
+                    ↓
+             VNMap schema + QA
+                    ↓
+               MVT / PMTiles
+                    ↓
+       basemap / transport / poi / building
+                    ↓
+           style + sprite + glyph
+                    ↓
+                 MapLibre
+```
+
+Hiện trạng `bootstrap`: menu và API hoạt động bằng vector style mở để không làm trắng bản đồ. Chỉ chuyển `basemaps/vnmap-core/manifest.json` sang `status=ready` và `data_ready=true` sau khi tile, style, provenance và quyền phân phối của bộ dữ liệu tự quản đã sẵn sàng. TEDP/VNPT/Google/Mapbox vẫn là provider adapter, không trở thành source of truth của VNMap Core.
+
 ## Vai trò GitHub Pages
 
 `https://vietflexmap.github.io/openmap/` là:
