@@ -10,6 +10,7 @@
   <script src="./dist/vietflex-core.js?v=20260917-vfbasemap1"></script>
   <script src="./dist/vietflex-platform.js?v=20260917-vfbasemap1"></script>
   <script src="./plugins/basemaps.js?v=vnmap-0.4.0"></script>
+  <script src="./dist/vnmap-core.js?v=0.1.0"></script>
   <script src="./plugins/layers.js?v=20260917-vfbasemap1"></script>
   <script src="./plugins/layer-adapters.js?v=20260917-vfbasemap1"></script>
 
@@ -75,7 +76,7 @@
     map.ready((rawMap)=>{rawMap.on('mousemove',(e)=>{lastLngLat=e.lngLat;renderCoordinate(lastLngLat)});rawMap.on('click',(e)=>{if(!measuring)return;const p={lat:e.lngLat.lat,lng:e.lngLat.lng};if(measurePoints.length)measureKm+=haversine(measurePoints[measurePoints.length-1],p);measurePoints.push(p);measureStatus.textContent=`${measurePoints.length} điểm · ${measureKm<1?(measureKm*1000).toFixed(1)+' m':measureKm.toFixed(3)+' km'}`});const apply=()=>setTimeout(()=>suppressDuplicateBienDong(rawMap),0);rawMap.on('style.load',apply);if(rawMap.isStyleLoaded())apply()});
     document.addEventListener('click',()=>{toolsPanel.classList.remove('is-open');toolsToggle.setAttribute('aria-expanded','false');setAttributionOpen(false)});document.addEventListener('keydown',(e)=>{if(e.key==='Escape'){toolsPanel.classList.remove('is-open');setAttributionOpen(false)}});
 
-    if(Vietflex.CoreTech){Vietflex.CoreTech.configure({language:'vi',datasetVersion:'dev'});Vietflex.CoreTech.Adapters.register('maplibre',{}, {kind:'maplibre',status:'active',role:'renderer'});Vietflex.CoreTech.Gateways.register('cdn',{}, {port:'cdn',status:'active',role:'static-distribution'});}
+    if(Vietflex.CoreTech){Vietflex.CoreTech.configure({language:'vi',datasetVersion:'dev'});Vietflex.CoreTech.Adapters.register('maplibre',{}, {kind:'maplibre',status:'active',role:'renderer'});if(window.VNMapCore)Vietflex.CoreTech.Adapters.register('vnmap-core',window.VNMapCore,{kind:'map-core',status:'bootstrap',role:'provider-neutral-vietnam-basemap'});Vietflex.CoreTech.Gateways.register('cdn',{}, {port:'cdn',status:'active',role:'static-distribution'});}
     if(window.VietflexLayers){window.VietflexLayers.installIntoCore();console.info('Vietflex GIS Layer Platform',window.VietflexLayers.manifest())}
   </script>
 </body>
