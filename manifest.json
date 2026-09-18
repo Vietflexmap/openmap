@@ -103,5 +103,21 @@
     "temporal-validity",
     "spatial-context",
     "vietnamese-first"
-  ]
+  ],
+  "map_core": {
+    "id": "vnmap",
+    "name": "VNMap Core",
+    "version": "0.1.0",
+    "status": "bootstrap",
+    "role": "provider-neutral Vietnam basemap/data-core profile",
+    "sdk": "dist/vnmap-core.js",
+    "manifest": "basemaps/vnmap-core/manifest.json",
+    "domains": [
+      "basemap",
+      "transport",
+      "poi",
+      "building"
+    ],
+    "production_ready": false
+  }
 }
