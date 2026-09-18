@@ -1,0 +1,149 @@
+{
+  "version": 8,
+  "name": "VNMap Core Streets",
+  "metadata": {
+    "vnmap:version": "0.1.0",
+    "vnmap:schema": "vnmap-core/1.0",
+    "vnmap:note": "This style becomes active only when manifest data_ready=true."
+  },
+  "glyphs": "./fonts/{fontstack}/{range}.pbf",
+  "sprite": "./sprites/sprite",
+  "sources": {
+    "vnmap-basemap": {
+      "type": "vector",
+      "tiles": ["./tiles/basemap/{z}/{x}/{y}.pbf"],
+      "minzoom": 0,
+      "maxzoom": 22,
+      "attribution": "VNMap Core data provenance: see manifest.json"
+    },
+    "vnmap-transport": {
+      "type": "vector",
+      "tiles": ["./tiles/transport/{z}/{x}/{y}.pbf"],
+      "minzoom": 4,
+      "maxzoom": 22
+    },
+    "vnmap-poi": {
+      "type": "vector",
+      "tiles": ["./tiles/poi/{z}/{x}/{y}.pbf"],
+      "minzoom": 10,
+      "maxzoom": 22
+    },
+    "vnmap-building": {
+      "type": "vector",
+      "tiles": ["./tiles/building/{z}/{x}/{y}.pbf"],
+      "minzoom": 15,
+      "maxzoom": 22
+    }
+  },
+  "layers": [
+    {
+      "id": "vnmap-background",
+      "type": "background",
+      "paint": { "background-color": "#f5f3ef" }
+    },
+    {
+      "id": "vnmap-landuse",
+      "type": "fill",
+      "source": "vnmap-basemap",
+      "source-layer": "landuse",
+      "paint": { "fill-color": "#e8eee2", "fill-opacity": 0.72 }
+    },
+    {
+      "id": "vnmap-water",
+      "type": "fill",
+      "source": "vnmap-basemap",
+      "source-layer": "water",
+      "paint": { "fill-color": "#b9d9ed" }
+    },
+    {
+      "id": "vnmap-admin",
+      "type": "line",
+      "source": "vnmap-basemap",
+      "source-layer": "admin",
+      "paint": {
+        "line-color": "#7c8792",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 4, 0.5, 10, 1.2],
+        "line-dasharray": [3, 2]
+      }
+    },
+    {
+      "id": "vnmap-buildings",
+      "type": "fill",
+      "source": "vnmap-building",
+      "source-layer": "building",
+      "minzoom": 15,
+      "paint": {
+        "fill-color": "#ded7cf",
+        "fill-outline-color": "#c8bfb6",
+        "fill-opacity": 0.86
+      }
+    },
+    {
+      "id": "vnmap-road-casing",
+      "type": "line",
+      "source": "vnmap-transport",
+      "source-layer": "road",
+      "minzoom": 5,
+      "paint": {
+        "line-color": "#d4d0ca",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.8, 12, 4.5, 18, 13]
+      }
+    },
+    {
+      "id": "vnmap-road",
+      "type": "line",
+      "source": "vnmap-transport",
+      "source-layer": "road",
+      "minzoom": 5,
+      "paint": {
+        "line-color": "#ffffff",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.45, 12, 3.2, 18, 10.5]
+      }
+    },
+    {
+      "id": "vnmap-poi-dot",
+      "type": "circle",
+      "source": "vnmap-poi",
+      "source-layer": "poi",
+      "minzoom": 12,
+      "paint": {
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 12, 2, 18, 4],
+        "circle-color": "#3269a8",
+        "circle-stroke-color": "#ffffff",
+        "circle-stroke-width": 1
+      }
+    },
+    {
+      "id": "vnmap-place-label",
+      "type": "symbol",
+      "source": "vnmap-basemap",
+      "source-layer": "place",
+      "layout": {
+        "text-field": ["coalesce", ["get", "name:vi"], ["get", "name"]],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 4, 11, 12, 16]
+      },
+      "paint": {
+        "text-color": "#273746",
+        "text-halo-color": "#ffffff",
+        "text-halo-width": 1.2
+      }
+    },
+    {
+      "id": "vnmap-poi-label",
+      "type": "symbol",
+      "source": "vnmap-poi",
+      "source-layer": "poi",
+      "minzoom": 13,
+      "layout": {
+        "text-field": ["coalesce", ["get", "name:vi"], ["get", "name"]],
+        "text-size": 11,
+        "text-offset": [0, 1.1]
+      },
+      "paint": {
+        "text-color": "#334155",
+        "text-halo-color": "#ffffff",
+        "text-halo-width": 1
+      }
+    }
+  ]
+}
