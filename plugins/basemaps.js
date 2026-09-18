@@ -1,4 +1,4 @@
-/* Vietflex OpenMap — Basemap Plugin v0.3.1
+/* Vietflex OpenMap — Basemap Plugin v0.4.0
  * Basemaps stay outside Core Tech. UI calls this registry, registry applies renderer adapters.
  * Terrain uses a Vietflex-managed raster-dem namespace and never depends on OpenTopoMap.
  * Vietflex Basemap is a self-hosted administrative raster package derived from the uploaded XYZ tile set.
@@ -6,7 +6,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION = '0.3.1';
+  const VERSION = '0.4.0';
   const currentScriptSrc =
     typeof document !== 'undefined' && document.currentScript && document.currentScript.src
       ? document.currentScript.src
@@ -22,6 +22,7 @@
   const ROOT = assetRoot || '.';
   const TERRAIN_MANIFEST_URL = ROOT + '/terrain/manifest.json';
   const VIETFLEX_BASEMAP_MANIFEST_URL = ROOT + '/basemaps/vietflex/manifest.json';
+  const VNMAP_CORE_MANIFEST_URL = ROOT + '/basemaps/vnmap-core/manifest.json';
 
   const REGISTRY = Object.freeze({
     simple: {
@@ -93,6 +94,18 @@
       attribution: 'Nguồn ảnh nền: TEDP (tedp.vn)',
       core: false,
       capabilities: ['raster', 'administrative', 'online']
+    },
+    vnmap: {
+      id: 'vnmap',
+      name: 'VNMap Core',
+      kind: 'vnmap-core',
+      manifest: VNMAP_CORE_MANIFEST_URL,
+      bootstrapStyle: 'https://tiles.openfreemap.org/styles/liberty',
+      provider: 'Vietflex Core',
+      attribution: 'VNMap Core · provider-neutral Vietnam basemap contract',
+      core: true,
+      capabilities: ['vector', 'mvt', 'pmtiles-ready', 'administrative', 'transport', 'poi', 'building', 'offline-ready'],
+      fallback: 'simple'
     }
   });
 
@@ -101,7 +114,9 @@
     positron: 'simple',
     fiord: 'terrain',
     admin: 'vietflex',
-    'admin-raster': 'vietflex'
+    'admin-raster': 'vietflex',
+    'vnmap-core': 'vnmap',
+    'core-map': 'vnmap'
   });
 
   function resolve(id) {
@@ -295,6 +310,59 @@
     });
   }
 
+  async function applyVNMapCore(rawMap, definition) {
+    const manifest = await loadJsonManifest(definition.manifest);
+    const bootstrapStyle =
+      manifest && manifest.bootstrap_style
+        ? manifest.bootstrap_style
+        : (definition.bootstrapStyle || REGISTRY.simple.style);
+
+    if (!manifest) {
+      rawMap.setStyle(bootstrapStyle);
+      try { rawMap.getContainer().dataset.vnmapCore = 'manifest-unavailable'; } catch (_) {}
+      return Object.assign({}, definition, {
+        status: 'bootstrap',
+        message: 'VNMap Core manifest chưa truy cập được; đang dùng vector bootstrap an toàn.'
+      });
+    }
+
+    const productionReady = manifest.status === 'ready' && manifest.data_ready === true;
+    if (!productionReady) {
+      rawMap.setStyle(bootstrapStyle);
+      try { rawMap.getContainer().dataset.vnmapCore = 'bootstrap'; } catch (_) {}
+      return Object.assign({}, definition, {
+        status: 'bootstrap',
+        version: manifest.version || null,
+        datasetVersion: manifest.dataset_version || null,
+        storage: manifest.storage_preference || null,
+        domains: manifest.domains ? Object.keys(manifest.domains) : [],
+        attribution: manifest.attribution || definition.attribution,
+        message: 'VNMap Core đang ở bootstrap; giao diện hoạt động bằng open vector style trong khi chờ 4 miền tile tự quản.'
+      });
+    }
+
+    const styleUrl = normalizeTileUrl(manifest.style_url);
+    if (!styleUrl) {
+      rawMap.setStyle(bootstrapStyle);
+      try { rawMap.getContainer().dataset.vnmapCore = 'invalid-manifest'; } catch (_) {}
+      return Object.assign({}, definition, {
+        status: 'invalid-manifest',
+        message: 'VNMap Core đã đánh dấu ready nhưng thiếu style_url; fallback về bootstrap.'
+      });
+    }
+
+    rawMap.setStyle(styleUrl);
+    try { rawMap.getContainer().dataset.vnmapCore = 'ready'; } catch (_) {}
+    return Object.assign({}, definition, {
+      status: 'ready',
+      version: manifest.version || null,
+      datasetVersion: manifest.dataset_version || null,
+      storage: manifest.storage_preference || null,
+      domains: manifest.domains ? Object.keys(manifest.domains) : [],
+      attribution: manifest.attribution || definition.attribution
+    });
+  }
+
   const state = { active: 'simple', lastResult: null };
 
   function apply(map, id) {
@@ -311,6 +379,8 @@
         result = await applyTerrain(rawMap, definition);
       } else if (definition.kind === 'raster-package') {
         result = await applyRasterPackage(rawMap, definition);
+      } else if (definition.kind === 'vnmap-core') {
+        result = await applyVNMapCore(rawMap, definition);
       } else {
         try { if (rawMap.getTerrain && rawMap.getTerrain()) rawMap.setTerrain(null); } catch (_) {}
         rawMap.setStyle(styleFor(definition));
@@ -339,6 +409,7 @@
     status: status,
     apply: apply,
     terrainManifestUrl: TERRAIN_MANIFEST_URL,
-    vietflexBasemapManifestUrl: VIETFLEX_BASEMAP_MANIFEST_URL
+    vietflexBasemapManifestUrl: VIETFLEX_BASEMAP_MANIFEST_URL,
+    vnmapCoreManifestUrl: VNMAP_CORE_MANIFEST_URL
   });
 })(typeof window !== 'undefined' ? window : globalThis);
