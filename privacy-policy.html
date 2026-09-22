@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="index,follow">
+  <title>Chính sách quyền riêng tư — Vietflex OpenMap</title>
+  <meta name="description" content="Chính sách quyền riêng tư của tiện ích Chrome Vietflex OpenMap.">
+  <style>
+    :root{color-scheme:light;--blue:#0f5fa8;--text:#182431;--muted:#667789;--border:#dce6ef;--soft:#f4f8fc}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--soft);color:var(--text);font:16px/1.7 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    main{max-width:900px;margin:38px auto;padding:34px;background:#fff;border:1px solid var(--border);border-radius:16px}
+    h1{font-size:34px;line-height:1.2;margin:0 0 6px}
+    h2{font-size:22px;margin:30px 0 8px}
+    h3{font-size:17px;margin:22px 0 6px}
+    p,li{max-width:78ch}
+    .meta{color:var(--muted);margin:0 0 22px}
+    .notice{padding:14px 16px;border-left:4px solid var(--blue);background:#eef7ff;border-radius:8px}
+    a{color:var(--blue)}
+    code{background:#eef3f7;padding:2px 5px;border-radius:5px}
+    footer{margin-top:34px;padding-top:20px;border-top:1px solid var(--border);color:var(--muted);font-size:14px}
+  </style>
+</head>
+<body>
+<main>
+  <h1>Chính sách quyền riêng tư — Vietflex OpenMap</h1>
+  <p class="meta"><strong>Cập nhật:</strong> 22/09/2026 · <strong>Phiên bản áp dụng:</strong> Chrome Extension Vietflex OpenMap</p>
+
+  <p class="notice"><strong>Tóm tắt:</strong> Vietflex OpenMap không bán dữ liệu người dùng, không tạo hồ sơ quảng cáo, không thu thập lịch sử duyệt web và không vận hành máy chủ phân tích riêng cho tiện ích Chrome.</p>
+
+  <h2>1. Phạm vi chính sách</h2>
+  <p>Chính sách này áp dụng cho tiện ích Chrome <strong>Vietflex OpenMap</strong>. Tiện ích giúp người dùng mở Vietflex OpenMap, nhập hoặc chọn tọa độ và chuyển tọa độ đó tới bản đồ.</p>
+
+  <h2>2. Dữ liệu tiện ích xử lý</h2>
+  <h3>Tọa độ hoặc văn bản do người dùng chủ động cung cấp</h3>
+  <p>Khi người dùng nhập tọa độ trong popup, gõ tọa độ sau từ khóa <code>vfmap</code>, hoặc chủ động bôi đen văn bản rồi chọn “Mở tọa độ bằng Vietflex OpenMap”, tiện ích xử lý nội dung đó cục bộ để kiểm tra xem có phải cặp vĩ độ/kinh độ hợp lệ hay không.</p>
+  <p>Dữ liệu này:</p>
+  <ul>
+    <li>không được tiện ích lưu vào cơ sở dữ liệu;</li>
+    <li>không được tiện ích gửi tới máy chủ phân tích hoặc quảng cáo;</li>
+    <li>chỉ được dùng để tạo liên kết mở vị trí tương ứng trên Vietflex OpenMap.</li>
+  </ul>
+
+  <h3>Quyền truy cập website</h3>
+  <p>Content script của tiện ích chỉ chạy trên <code>https://vietflexmap.github.io/openmap/*</code>. Mục đích là đọc deep-link tọa độ trong URL và tự điền tọa độ vào công cụ tra cứu của Vietflex OpenMap. Tiện ích không yêu cầu host access tới các website khác.</p>
+
+  <h2>3. Dữ liệu tiện ích không thu thập</h2>
+  <p>Tiện ích Chrome không chủ động thu thập hoặc lưu trữ:</p>
+  <ul>
+    <li>tên, email hoặc thông tin nhận dạng cá nhân;</li>
+    <li>mật khẩu hoặc thông tin xác thực;</li>
+    <li>thông tin tài chính hoặc thanh toán;</li>
+    <li>thông tin sức khỏe;</li>
+    <li>nội dung liên lạc cá nhân;</li>
+    <li>lịch sử duyệt web;</li>
+    <li>dữ liệu phục vụ quảng cáo hoặc tạo hồ sơ quảng cáo.</li>
+  </ul>
+
+  <h2>4. Vị trí thiết bị</h2>
+  <p>Bản thân tiện ích Chrome không yêu cầu quyền vị trí của Chrome và không thu thập vị trí thiết bị. Nếu người dùng mở website Vietflex OpenMap và chủ động sử dụng chức năng “Tìm vị trí”, trình duyệt có thể hiển thị yêu cầu cấp quyền vị trí cho website. Việc cấp quyền đó do người dùng quyết định và thuộc ngữ cảnh của website, không phải quyền của tiện ích Chrome.</p>
+
+  <h2>5. Dịch vụ bản đồ bên thứ ba</h2>
+  <p>Khi website Vietflex OpenMap được mở, trình duyệt có thể kết nối trực tiếp tới các dịch vụ bản đồ, tile hoặc dữ liệu không gian được cấu hình trên website. Các nhà cung cấp độc lập có thể nhận thông tin kỹ thuật thông thường của một yêu cầu web, ví dụ địa chỉ IP hoặc thông tin trình duyệt, theo chính sách và điều khoản riêng của họ. Tiện ích Chrome không tái sử dụng các dữ liệu đó để quảng cáo hoặc theo dõi người dùng.</p>
+
+  <h2>6. Chia sẻ và bán dữ liệu</h2>
+  <p>Vietflex OpenMap không bán dữ liệu người dùng. Tiện ích không chia sẻ dữ liệu người dùng với mạng quảng cáo, nhà môi giới dữ liệu hoặc bên thứ ba cho mục đích quảng cáo.</p>
+
+  <h2>7. Lưu trữ và bảo mật</h2>
+  <p>Phiên bản tiện ích hiện tại không có hệ thống tài khoản và không có cơ sở dữ liệu người dùng riêng. JavaScript thực thi của tiện ích được đóng gói cùng extension; tiện ích không tải mã thực thi từ xa để chạy trong ngữ cảnh extension.</p>
+
+  <h2>8. Thay đổi chính sách</h2>
+  <p>Nếu chức năng hoặc cách xử lý dữ liệu thay đổi, chính sách này sẽ được cập nhật để phản ánh chính xác hành vi của sản phẩm trước hoặc cùng thời điểm thay đổi đó được phát hành.</p>
+
+  <h2>9. Liên hệ và mã nguồn</h2>
+  <p>
+    Trang dự án: <a href="https://github.com/Vietflexmap/openmap">https://github.com/Vietflexmap/openmap</a><br>
+    Hỗ trợ / báo lỗi: <a href="https://github.com/Vietflexmap/openmap/issues">https://github.com/Vietflexmap/openmap/issues</a><br>
+    Ứng dụng web: <a href="https://vietflexmap.github.io/openmap/">https://vietflexmap.github.io/openmap/</a>
+  </p>
+
+  <footer>
+    © 2026 Vietflexmap · Developed by Long Ngo · Vietflex-specific source code: MIT License.
+  </footer>
+</main>
+</body>
+</html>
